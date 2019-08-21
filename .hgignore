@@ -1,0 +1,5 @@
+syntax: glob
+dist/
+__pycache__/
+examples/
+*.egg-info/

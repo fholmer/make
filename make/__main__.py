@@ -7,6 +7,22 @@ ConfTypes = {
 }
 
 def main():
+    """
+        Main entrypoint.
+
+        .. code-block:: console
+
+            usage: python -m make [-h] conf_type source target
+
+            positional arguments:
+            conf_type   configuration type
+            source      source dir
+            target      target dir
+
+            optional arguments:
+            -h, --help  show this help message and exit
+
+    """
     global_parser = ArgumentParser(add_help=True)
     global_parser.add_argument('conf_type', type=str, help='configuration type')
     global_parser.add_argument('source', type=pathlib.Path, help='source dir')

@@ -3,7 +3,7 @@ Make
 
 * Source Code: https://bitbucket.org/fholmer/make
 * PyPI: https://pypi.org/project/make/
-* License: GNU Lesser General Public License v3 or later (LGPLv3+)
+* License: BSD License
 
 Summary
 -------
@@ -24,27 +24,83 @@ Usage
 
     $ python -m make project source-path target-path
 
-The source path have to contain a file named ``project.conf``
+The ``source-path`` have to contain a file named ``project.conf`` or
+``project.json``.  Choose the format you prefer.
 
-The format of the file is more or less ini format:
+Format of ``project.conf``:
 
 .. code-block:: ini
 
-    [general]
-    project_name = My-Project
-    package_name = {{ project.project_name.lower().replace(' ', '_').replace('-', '_') }}
+    [project]
+    name = App
+    package = {{project.name.lower().replace(' ','_').replace('-', '_')}}
+    include_tests = json::["none", "pytest"]
+    include_docs = json::["none", "sphinx", "mkdocs"]
 
-Section names and key names can be anything. Usage in a python file:
+    # this is a comment.
+    # section or keys starting with - is non-interactive variables
 
-``setup.py``:
+    _test_dir = {{ 'tests' if project.include_tests != 'none' else '' }}
+
+    [_docs]
+    dir=
+        {%%- if project.include_docs == 'sphinx' -%%}
+        docs
+        {%%- elif project.include_docs == 'mkdocs' -%%}
+        docz
+        {%%- else -%%}
+        {%%- endif -%%}
+
+The ini-format allows for multi line values, but % have to be escaped.
+Comments is allowed. Use the special prefix json:: to serialize the following
+text to a list.
+
+Format of ``project.json``:
+
+.. code-block:: json
+
+    {
+        "project": {
+
+            "name": "App",
+            "package": "{{project.name.lower().replace(' ','_').replace('-', '_')}}",
+            "include_tests": ["none", "pytest"],
+            "include_docs": ["none", "sphinx", "mkdocs"],
+            "_test_dir": "{{ 'tests' if project.include_tests != 'none' else '' }}"
+        },
+        "_docs": {
+            "dir": "{%- if project.include_docs == 'sphinx' -%}\ndocs\n{%- elif project.include_docs == 'mkdocs' -%}\ndocz\n{%- else -%}\n{%- endif -%}"
+        }
+    }
+
+The json-format do not have multi line but you can use multiple ``\n`` in one
+line.
+
+The source directory could be something like this:
+
+.. code-block:: text
+
+    /My-Project-Template
+      /{{project.name}}
+        /{{_docs.dir}}
+          conf.py
+        /{{project._test_dir}}
+        /{{project.package}}
+          __init__.py
+        setup.py
+        LICENSE
+        README.rst
+      project.conf
+
+``{{project.name}}/setup.py`` may look something like this:
 
 .. code-block:: python
 
         from setuptools import setup, find_packages
-        from {{ general.package_name }} import __version__ as app_version
+        from {{ package.name }} import __version__ as app_version
 
         setup(
-            name="{{ general.project_name }}",
+            name="{{ project.name }}",
             version=app_version,
-            packages=find_packages(include=['{{ general.package_name }}*']),
+            packages=find_packages(include=['{{ project.package }}*']),
         )

@@ -30,9 +30,10 @@ def get_vars(args, interactive=True):
             print("Section:", section, project_conf)
 
         for key, val in section_dict.items():
+            is_hidden = key.startswith("_") or section.startswith("_")
             if isinstance(val, str):
                 val = Template(val).render(variables)
-            if interactive:
+            if interactive and not is_hidden:
                 val = question(key, val)
             if args.dry_run:
                 print("Choice: ", key, "=", val)

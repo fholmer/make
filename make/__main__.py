@@ -12,7 +12,7 @@ def main():
 
         .. code-block:: console
 
-            usage: python -m make [-h] conf_type source target
+            usage: python -m make [-h] [--dry-run] conf_type source [target]
 
             positional arguments:
             conf_type   configuration type
@@ -27,11 +27,10 @@ def main():
     global_parser = ArgumentParser(add_help=True)
     global_parser.add_argument("conf_type", type=str, help="configuration type")
     global_parser.add_argument("source", type=pathlib.Path, help="source dir")
-    global_parser.add_argument("target", type=pathlib.Path, help="target dir")
+    global_parser.add_argument("target", type=pathlib.Path, nargs='?', default=".", help="target dir")
     global_parser.add_argument("--dry-run", action="store_true", help="test run")
     args = global_parser.parse_args()
 
-    conf_type = args.conf_type
     if args.conf_type and args.conf_type in ConfTypes:
         try:
             ConfTypes[args.conf_type](args=args)

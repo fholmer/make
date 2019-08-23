@@ -62,19 +62,21 @@ def make_project(args):
 
     render = partial(_render, variables)
 
-    for a, root, fn in iter_filenames(source):
-        if a == 1:
+    for action, root, fn in iter_filenames(source):
+        if action == 1:
             _root = render(root)
-            if _root:
-                target_path = str(target.joinpath(_root))
+            if _root and not contains_blanks(_root):
+                target_path = target.joinpath(_root)
                 if args.dry_run:
                     print("New path:", target_path)
                 else:
-                    os.makedirs(target_path)
-        elif a == 2:
+                    os.makedirs(str(target_path))
+        elif action == 2:
             _root = render(root)
             _fn = render(fn)
-            if _fn and _root:
+            # files in the root folder is ignored and files or folders with blank
+            # name is also ignored
+            if _fn and _root and not contains_blanks(_root):
                 source_path = source.joinpath(root, fn)
                 target_path = target.joinpath(_root, _fn)
                 if args.dry_run:
@@ -84,21 +86,26 @@ def make_project(args):
                     full_content = render(full_content)
                     target_path.write_text(full_content)
 
+_os_sep = os.path.sep
+_os_sep_dbl = _os_sep + _os_sep
+
+def contains_blanks(pth):
+    return (_os_sep_dbl in pth) or pth.endswith(_os_sep)
 
 def iter_filenames(source):
     """
         Walk through all files and yield one of the following:
 
-        * (1, dirname, None)
-        * (2, dirname, filename)
+        * (1, rootdir, dirname, None)
+        * (2, rootdir, dirname, filename)
 
         Usage:
 
         .. code-block:: python
 
-            for action, root, fn in iter_filenames(some_dir):
+            for action, root, dn, fn in iter_filenames(some_dir):
                 if action == 1:
-                    print("I am {root}, the directory)
+                    print("I am {root}/{dn}, the directory)
                 elif action == 2:
                     print("I am not")
     """

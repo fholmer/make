@@ -45,12 +45,14 @@ setup(
     url="https://bitbucket.org/fholmer/make",
     author="Frode Holmer",
     author_email="fholmer+netdef@gmail.com",
-    license="GNU Lesser General Public License v3 or later",
+    license="BSD License",
     project_urls={"Source Code": "https://bitbucket.org/fholmer/make"},
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Environment :: Console",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: BSD License",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",

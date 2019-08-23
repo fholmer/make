@@ -40,6 +40,8 @@ def main():
         except Abort as error:
             print("{}".format(error))
             global_parser.print_usage()
+        except KeyboardInterrupt:
+            print("Aborted by user")
     else:
         global_parser.print_help()
 

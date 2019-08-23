@@ -38,7 +38,7 @@ Format of ``project.conf``:
     include_docs = json::["none", "sphinx", "mkdocs"]
 
     # this is a comment.
-    # section or keys starting with - is non-interactive variables
+    # section or keys starting with _ is non-interactive variables
 
     _test_dir = {{ 'tests' if project.include_tests != 'none' else '' }}
 
@@ -51,9 +51,9 @@ Format of ``project.conf``:
         {%%- else -%%}
         {%%- endif -%%}
 
-The ini-format allows for multi line values, but % have to be escaped.
-Comments is allowed. Use the special prefix json:: to serialize the following
-text to a list.
+The ini-format allows for multi line values, but ``%`` have to be escaped.
+Comments is allowed. Use the special prefix ``json::`` to serialize subsequent
+text as json.
 
 Format of ``project.json``:
 
@@ -97,7 +97,7 @@ The source directory could be something like this:
 .. code-block:: python
 
         from setuptools import setup, find_packages
-        from {{ package.name }} import __version__ as app_version
+        from {{ project.package }} import __version__ as app_version
 
         setup(
             name="{{ project.name }}",

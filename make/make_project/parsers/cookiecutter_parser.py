@@ -16,13 +16,17 @@ def get_vars(args, interactive=True):
     if not project_conf.is_file():
         raise make_project.ParserNotFound("Config %s does not exists" % project_conf)
 
-    with open(str(project_conf), "r") as f:
-        variables = json.load(f)
+    variables = {}
 
-    if not isinstance(variables, dict):
+    with open(str(project_conf), "r") as f:
+        section_dict = json.load(f)
+
+    if not isinstance(section_dict, dict):
         raise make_project.Invalid("root object have to be of type dict")
 
-    for key, val in variables.items():
+    variables["cookiecutter"] = section_dict
+
+    for key, val in section_dict.items():
         if isinstance(val, str):
             val = make_project.Template(val).render(variables)
         if interactive:
@@ -30,6 +34,6 @@ def get_vars(args, interactive=True):
         if args.dry_run:
             print("Choice: ", key, "=", repr(val))
 
-        variables[key] = val
+        section_dict[key] = val
 
-    return {"cookiecutter":variables}
+    return variables

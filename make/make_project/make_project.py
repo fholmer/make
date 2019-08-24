@@ -1,24 +1,17 @@
 import os
+import pathlib
 from functools import partial
-from jinja2 import Template
+from jinja2 import Environment
 
-from .parsers import ini_parser , json_parser
+from .parsers import ini_parser , json_parser, cookiecutter_parser
+from ..errors import Abort, Invalid, ParserNotFound
 
-class Abort(ValueError):
-    pass
-
-
-class Invalid(ValueError):
-    pass
-
-
-class ParserNotFound(Exception):
-    pass
-
+Template = Environment(extensions=['jinja2_time.TimeExtension']).from_string
 
 Parsers = {
     "ini_parser": ini_parser.get_vars,
-    "json_parser": json_parser.get_vars
+    "json_parser": json_parser.get_vars,
+    "cookiecutter_parser": cookiecutter_parser.get_vars
 }
 
 
@@ -41,8 +34,8 @@ def make_project(args):
         * Parses ``project.conf``
         * copy and transform files in source to target.
     """
-    source = args.source.absolute()
-    target = args.target.absolute()
+    source = pathlib.Path(args.source).absolute()
+    target = pathlib.Path(args.target).absolute()
 
     if not source.is_dir():
         raise Abort("Source %s does not exists" % source)

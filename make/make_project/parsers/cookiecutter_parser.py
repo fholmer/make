@@ -1,0 +1,35 @@
+import json
+import pathlib
+from .. import make_project
+
+from .json_parser import question, question_from_list, question_from_string
+
+def get_vars(args, interactive=True):
+    """
+        Parse given file and copy the content to a dict of dicts.
+
+        Also, the values are rendered with jinja2 template.
+
+    """
+
+    project_conf = pathlib.Path(args.source).absolute().joinpath("cookiecutter.json")
+    if not project_conf.is_file():
+        raise make_project.ParserNotFound("Config %s does not exists" % project_conf)
+
+    with open(str(project_conf), "r") as f:
+        variables = json.load(f)
+
+    if not isinstance(variables, dict):
+        raise make_project.Invalid("root object have to be of type dict")
+
+    for key, val in variables.items():
+        if isinstance(val, str):
+            val = make_project.Template(val).render(variables)
+        if interactive:
+            val = question(key, val)
+        if args.dry_run:
+            print("Choice: ", key, "=", repr(val))
+
+        variables[key] = val
+
+    return {"cookiecutter":variables}

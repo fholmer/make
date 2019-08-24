@@ -1,5 +1,5 @@
 import json
-from jinja2 import Template
+import pathlib
 
 from .. import make_project
 
@@ -11,7 +11,7 @@ def get_vars(args, interactive=True):
 
     """
 
-    project_conf = args.source.absolute().joinpath("project.json")
+    project_conf = pathlib.Path(args.source).absolute().joinpath("project.json")
     if not project_conf.is_file():
         raise make_project.ParserNotFound("Config %s does not exists" % project_conf)
 
@@ -32,7 +32,7 @@ def get_vars(args, interactive=True):
         for key, val in section_dict.items():
             is_hidden = key.startswith("_") or section.startswith("_")
             if isinstance(val, str):
-                val = Template(val).render(variables)
+                val = make_project.Template(val).render(variables)
             if interactive and not is_hidden:
                 val = question(key, val)
             if args.dry_run:
@@ -47,18 +47,27 @@ def question(question, defaultvalue):
 
     if isinstance(defaultvalue, list):
         return question_from_list(question, defaultvalue)
-    elif isinstance(defaultvalue, str):
+    elif isinstance(defaultvalue, (str, bool, float, int)):
         return question_from_string(question, defaultvalue)
     else:
         raise NotImplementedError
 
 
 def question_from_string(quest, ion):
-    reply = input("{}? [{}]: ".format(quest, ion))
+    vtype = type(ion)
+    reply = input("{}? [{}]: ".format(quest, str(ion)))
     if reply:
-        return reply
+        if vtype is bool:
+            return _safe_bool(reply)
+        return vtype(reply)
     return ion
 
+def _safe_bool(boolstr):
+    _bool = boolstr.lower()
+    if _bool in ("1", "on", "t", "true", "yes", "y") or _bool.startswith("true"):
+        return True
+    return False
+    
 
 def question_from_list(question, choices):
     size = len(choices)

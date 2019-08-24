@@ -20,9 +20,39 @@ Installation
 Usage
 -----
 
+Download and unpack a template:
+
+.. code-block:: console
+
+    $ python -m make get source-url target-path
+    $ python -m zipfile -e target-path .
+
+Create a new project based on the downloaded template:
+
 .. code-block:: console
 
     $ python -m make project source-path target-path
+
+Example:
+
+Download a project template.
+*We will use a popular cookiecutter template in this example*:
+
+.. code-block:: console
+
+    python -m make get https://github.com/kragniz/cookiecutter-pypackage-minimal/archive/master.zip pypackage.zip
+    python -m zipfile -e pypackage.zip .
+
+Create a new project:
+
+.. code-block:: console
+
+    python -m make project cookiecutter-pypackage-minimal-master New-Project
+
+
+
+How to make a project template
+------------------------------
 
 The ``source-path`` have to contain a file named ``project.conf`` or
 ``project.json``.  Choose the format you prefer.

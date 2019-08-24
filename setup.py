@@ -61,5 +61,5 @@ setup(
         "Operating System :: Microsoft :: Windows",
     ],
     packages=find_packages(include=["make*"]),
-    install_requires=["Jinja2"],
+    install_requires=["Jinja2", "jinja2-time"],
 )

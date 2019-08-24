@@ -1,6 +1,6 @@
 import json
+import pathlib
 from configparser import ConfigParser
-from jinja2 import Template
 
 from .. import make_project
 
@@ -12,7 +12,7 @@ def get_vars(args, interactive=True):
 
     """
 
-    project_conf = args.source.absolute().joinpath("project.conf")
+    project_conf = pathlib.Path(args.source).absolute().joinpath("project.conf")
     if not project_conf.is_file():
         raise make_project.ParserNotFound("Config %s does not exists" % project_conf)
 
@@ -33,7 +33,7 @@ def get_vars(args, interactive=True):
 
         for key, val in section_dict.items():
             is_hidden = key.startswith("_") or section.startswith("_")
-            _val = Template(val).render(variables)
+            _val = make_project.Template(val).render(variables)
             if interactive and not is_hidden:
                 _val = question(key, _val)
             if args.dry_run:

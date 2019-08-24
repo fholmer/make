@@ -42,11 +42,11 @@ setup(
     description="Create project layout from jinja2 templates.",
     long_description=long_description,
     keywords="make project template",
-    url="https://bitbucket.org/fholmer/make",
+    url="https://github.com/fholmer/make",
     author="Frode Holmer",
     author_email="fholmer+netdef@gmail.com",
     license="BSD License",
-    project_urls={"Source Code": "https://bitbucket.org/fholmer/make"},
+    project_urls={"Source Code": "https://github.com/fholmer/make"},
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
         "Development Status :: 5 - Production/Stable",

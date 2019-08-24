@@ -1,7 +1,7 @@
 Make
 ====
 
-* Source Code: https://bitbucket.org/fholmer/make
+* Source Code: https://github.com/fholmer/make
 * PyPI: https://pypi.org/project/make/
 * License: BSD License
 

@@ -1,7 +1,8 @@
 import json
 import pathlib
 
-from .. import make_project
+from ...errors import Invalid, ParserNotFound
+from ...template import Template
 
 def get_vars(args, interactive=True):
     """
@@ -13,18 +14,18 @@ def get_vars(args, interactive=True):
 
     project_conf = pathlib.Path(args.source).absolute().joinpath("project.json")
     if not project_conf.is_file():
-        raise make_project.ParserNotFound("Config %s does not exists" % project_conf)
+        raise ParserNotFound("Config %s does not exists" % project_conf)
 
     with open(str(project_conf), "r") as f:
         variables = json.load(f)
 
     if not isinstance(variables, dict):
-        raise make_project.Invalid("root object have to be of type dict")
+        raise Invalid("root object have to be of type dict")
 
     for section, section_dict in variables.items():
 
         if not isinstance(section_dict, dict):
-            raise make_project.Invalid("section '{}' have to be of type dict".format(section))
+            raise Invalid("section '{}' have to be of type dict".format(section))
 
         if args.dry_run:
             print("Section:", section, project_conf)
@@ -32,7 +33,7 @@ def get_vars(args, interactive=True):
         for key, val in section_dict.items():
             is_hidden = key.startswith("_") or section.startswith("_")
             if isinstance(val, str):
-                val = make_project.Template(val).render(variables)
+                val = Template(val).render(variables)
             if interactive and not is_hidden:
                 val = question(key, val)
             if args.dry_run:
@@ -79,4 +80,4 @@ def question_from_list(question, choices):
     if 0 < ires <= size:
         return choices[ires - 1]
     else:
-        raise make_project.Invalid("Invalid option")
+        raise Invalid("Invalid option")

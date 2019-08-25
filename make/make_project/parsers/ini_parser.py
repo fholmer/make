@@ -2,7 +2,8 @@ import json
 import pathlib
 from configparser import ConfigParser
 
-from .. import make_project
+from ...errors import Invalid, ParserNotFound
+from ...template import Template
 
 def get_vars(args, interactive=True):
     """
@@ -14,7 +15,7 @@ def get_vars(args, interactive=True):
 
     project_conf = pathlib.Path(args.source).absolute().joinpath("project.conf")
     if not project_conf.is_file():
-        raise make_project.ParserNotFound("Config %s does not exists" % project_conf)
+        raise ParserNotFound("Config %s does not exists" % project_conf)
 
     config = ConfigParser()
 
@@ -33,7 +34,7 @@ def get_vars(args, interactive=True):
 
         for key, val in section_dict.items():
             is_hidden = key.startswith("_") or section.startswith("_")
-            _val = make_project.Template(val).render(variables)
+            _val = Template(val).render(variables)
             if interactive and not is_hidden:
                 _val = question(key, _val)
             if args.dry_run:
@@ -76,4 +77,4 @@ def question_from_list(question, choices):
     if 0 < ires <= size:
         return choices[ires - 1]
     else:
-        raise make_project.Invalid("Invalid option")
+        raise Invalid("Invalid option")

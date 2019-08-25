@@ -1,12 +1,10 @@
 import os
 import pathlib
 from functools import partial
-from jinja2 import Environment
 
 from .parsers import ini_parser , json_parser, cookiecutter_parser
 from ..errors import Abort, Invalid, ParserNotFound
-
-Template = Environment(extensions=['jinja2_time.TimeExtension']).from_string
+from ..template import Template
 
 Parsers = {
     "ini_parser": ini_parser.get_vars,

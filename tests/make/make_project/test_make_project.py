@@ -73,8 +73,29 @@ def test_make_project_file_not_exists():
         )
 
 
-#def test_make_project_file_exists(path):
-#    TODO:
+@patch.object(make_project, "create_files")
+def test_make_project_file_exists(create_files):
+
+    path = Mock()
+    path.absolute.return_value = path
+    path.is_dir.side_effect = [True, False]
+
+    def check_parser_callback(args):
+        assert isinstance(args, argparse.Namespace) 
+        return {"proj":{"test":1}}
+
+    with patch.dict(make_project.Parsers, {"parser":check_parser_callback}):
+
+        with patch("pathlib.Path", return_value=path):
+
+            #make_project.Parsers = {"parser":check_parser_callback}
+            make_project.make_project(
+                args=argparse.Namespace(source="src", target="dst", dry_run=False)
+            )
+
+            assert path.absolute.call_count == 2
+            create_files.assert_called_once_with(path, path, False, {"proj":{"test":1}})
+
 
 def test_create_dirs():
     source = Mock()

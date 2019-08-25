@@ -40,19 +40,19 @@ Download a project template.
 
 .. code-block:: console
 
-    python -m make get https://github.com/kragniz/cookiecutter-pypackage-minimal/archive/master.zip pypackage.zip
-    python -m zipfile -e pypackage.zip .
+    $ python -m make get https://github.com/kragniz/cookiecutter-pypackage-minimal/archive/master.zip pypackage.zip
+    $ python -m zipfile -e pypackage.zip .
 
 Create a new project:
 
 .. code-block:: console
 
-    python -m make project cookiecutter-pypackage-minimal-master New-Project
+    $ python -m make project cookiecutter-pypackage-minimal-master New-Project
 
 
 
-How to make a project template
-------------------------------
+How to make your own project template
+-------------------------------------
 
 The ``source-path`` have to contain a file named ``project.conf`` or
 ``project.json``.  Choose the format you prefer.

@@ -1,18 +1,8 @@
 # -*- coding: utf-8 -*-
 """A setuptools based setup module.
 
-See:
-https://packaging.python.org/en/latest/distributing.html
-
-
-To build sdist:
-    python3 setup.py sdist
-
-To build wheel:
-    install wheel:
-      python3 -m pip install wheel
-    build wheel:
-      python3 setup.py bdist_wheel
+Build wheel:
+    python3 setup.py bdist_wheel
 
 Update requirements:
     python3 -m pip freeze -r requirements.txt > requirements.txt

@@ -53,17 +53,20 @@ def make_project(args):
     else:
         raise Abort("cannot parse source directory")
 
-    render = partial(_render, variables)
+    create_files(source, target, args.dry_run, variables)
 
+def create_files(source, target, dry_run, variables):
+    render = partial(_render, variables)
     for action, root, fn in iter_filenames(source):
         if action == 1:
             _root = render(root)
             if _root and not contains_blanks(_root):
                 target_path = target.joinpath(_root)
-                if args.dry_run:
+                if dry_run:
                     print("New path:", target_path)
                 else:
-                    os.makedirs(str(target_path))
+                    #os.makedirs(str(target_path))
+                    target_path.mkdir(parents=True)
         elif action == 2:
             _root = render(root)
             _fn = render(fn)
@@ -72,7 +75,7 @@ def make_project(args):
             if _fn and _root and not contains_blanks(_root):
                 source_path = source.joinpath(root, fn)
                 target_path = target.joinpath(_root, _fn)
-                if args.dry_run:
+                if dry_run:
                     print("New file:", str(target_path))
                 else:
                     full_content = source_path.read_text()
@@ -104,6 +107,7 @@ def iter_filenames(source):
     """
 
     root_index = len(str(source)) + 1
+
     for full_root, _dirs, files in os.walk(str(source)):
         root = full_root[root_index:]
 

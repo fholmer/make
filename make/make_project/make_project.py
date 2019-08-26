@@ -1,10 +1,12 @@
 import os
 import pathlib
 from functools import partial
+import shutil
+import glob
 
 from .parsers import ini_parser , json_parser, cookiecutter_parser
 from ..errors import Abort, Invalid, ParserNotFound
-from ..template import Template
+from ..template import Template, binary_suffixes, root_exclude
 
 Parsers = {
     "ini_parser": ini_parser.get_vars,
@@ -76,9 +78,16 @@ def create_files(source, target, dry_run, variables):
                 if dry_run:
                     print("New file:", str(target_path))
                 else:
-                    full_content = source_path.read_text()
-                    full_content = render(full_content)
-                    target_path.write_text(full_content)
+                    try:
+                        if not source_path.suffix.lower() in binary_suffixes:
+                            full_content = source_path.read_text()
+                            full_content = render(full_content)
+                            target_path.write_text(full_content)
+                        else:
+                            shutil.copy(source_path, target_path)
+                    except UnicodeDecodeError as err:
+                        print("WARNING: {} can not be rendered with Jinja2. UnicodeDecodeError: {}".format(source_path.name, str(err)))
+                        shutil.copy(source_path, target_path)
 
 _os_sep = os.path.sep
 _os_sep_dbl = _os_sep + _os_sep
@@ -106,9 +115,17 @@ def iter_filenames(source):
 
     root_index = len(str(source)) + 1
 
+    exclude = []
+    for exc in root_exclude:
+        exclude.extend(glob.glob(str(source.joinpath(exc))))
+
     for full_root, _dirs, files in os.walk(str(source)):
         root = full_root[root_index:]
-
-        yield 1, root, None
-        for fn in files:
-            yield 2, root, fn
+        skip = False
+        for exc in exclude:
+            if full_root.startswith(exc):
+                skip = True
+        if not skip:
+            yield 1, root, None
+            for fn in files:
+                yield 2, root, fn

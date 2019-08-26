@@ -45,7 +45,7 @@ def test_contain_blanks():
      ]]
 )
 def test_iter_filenames(walk):
-    walker = make_project.iter_filenames("src")
+    walker = make_project.iter_filenames(pathlib.Path("src"))
     assert (1, "", None) == next(walker)
     assert (1, "en", None) == next(walker)
     assert (2, "en", "to") == next(walker)

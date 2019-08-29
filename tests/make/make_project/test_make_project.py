@@ -23,19 +23,19 @@ def test_contain_blanks():
     assert make_project.contains_blanks("root{0}dir{0}".format(_sep))
     assert not make_project.contains_blanks("root{0}dir".format(_sep))
 
-    make_project._os_sep = posixpath.sep
-    make_project._os_sep_dbl = posixpath.sep + posixpath.sep
-    assert make_project.contains_blanks("root/")
-    assert make_project.contains_blanks("root//dir")
-    assert make_project.contains_blanks("root/dir/")
-    assert not make_project.contains_blanks("root/dir")
+    with patch.object(make_project, "_os_sep", posixpath.sep):
+        with patch.object(make_project, "_os_sep_dbl", posixpath.sep + posixpath.sep):
+            assert make_project.contains_blanks("root/")
+            assert make_project.contains_blanks("root//dir")
+            assert make_project.contains_blanks("root/dir/")
+            assert not make_project.contains_blanks("root/dir")
 
-    make_project._os_sep = ntpath.sep
-    make_project._os_sep_dbl = ntpath.sep + ntpath.sep
-    assert make_project.contains_blanks("root\\")
-    assert make_project.contains_blanks("root\\\\dir")
-    assert make_project.contains_blanks("root\\dir\\")
-    assert not make_project.contains_blanks("root/dir")
+    with patch.object(make_project, "_os_sep", ntpath.sep):
+        with patch.object(make_project, "_os_sep_dbl", ntpath.sep + ntpath.sep):
+            assert make_project.contains_blanks("root\\")
+            assert make_project.contains_blanks("root\\\\dir")
+            assert make_project.contains_blanks("root\\dir\\")
+            assert not make_project.contains_blanks("root/dir")
 
 @patch(
     'os.walk',

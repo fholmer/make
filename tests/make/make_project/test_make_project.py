@@ -7,6 +7,7 @@ import ntpath
 import pytest
 from unittest.mock import Mock, patch
 from make.make_project import make_project
+from make.make_project.data_medium.local import Local
 from make import errors
 
 _sep = os.path.sep
@@ -94,7 +95,7 @@ def test_make_project_file_exists(create_files):
             )
 
             assert path.absolute.call_count == 2
-            create_files.assert_called_once_with(path, path, False, {"proj":{"test":1}})
+            create_files.assert_called_once_with(path, path, Local, {"proj":{"test":1}})
 
 
 def test_create_dirs():
@@ -108,7 +109,7 @@ def test_create_dirs():
     dirs = [[(1, "", None), (1, "{{dir.name}}", None)]]
 
     with patch.object(make_project, "iter_filenames", side_effect=dirs):
-        make_project.create_files(source, target, False, variables)
+        make_project.create_files(source, target, Local, variables)
 
         target.joinpath.assert_called_once_with("en")
         target_path.mkdir.assert_called_once()
@@ -129,7 +130,7 @@ def test_create_files():
     dirs = [[(2, "", ""), (2, "en", ""), (2, "en", "{{file.name}}")]]
 
     with patch.object(make_project, "iter_filenames", side_effect=dirs):
-        make_project.create_files(source, target, False, variables)
+        make_project.create_files(source, target, Local, variables)
 
         target.joinpath.assert_called_once_with("en", "fn")
         source_path.read_text.assert_called_once()

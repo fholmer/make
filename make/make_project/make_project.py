@@ -5,6 +5,7 @@ import shutil
 import glob
 
 from .parsers import ini_parser , json_parser, cookiecutter_parser
+from .data_medium import dry_run, local
 from ..errors import Abort, Invalid, ParserNotFound
 from ..template import Template, binary_suffixes, root_exclude
 
@@ -23,6 +24,10 @@ Parsers = {
     "cookiecutter_parser": cookiecutter_parser.get_vars
 }
 
+Medium = {
+    "local": local.Local,
+    "dry_run": dry_run.DryRun
+}
 
 def _render(kwargs, string):
     """
@@ -62,20 +67,20 @@ def make_project(args):
     else:
         raise Abort("cannot parse source directory")
 
-    create_files(source, target, args.dry_run, variables)
+    if args.dry_run:
+        data_medium_interface = Medium["dry_run"]
+    else:
+        data_medium_interface = Medium["local"]
+    create_files(source, target, data_medium_interface, variables)
 
-def create_files(source, target, dry_run, variables):
+def create_files(source, target, medium, variables):
     render = partial(_render, variables)
     for action, root, fn in iter_filenames(source):
         if action == 1:
             _root = render(root)
             if _root and not contains_blanks(_root):
                 target_path = target.joinpath(_root)
-                if dry_run:
-                    print("New path:", target_path)
-                else:
-                    #os.makedirs(str(target_path))
-                    target_path.mkdir(parents=True)
+                medium.mkdir(target_path)
         elif action == 2:
             _root = render(root)
             _fn = render(fn)
@@ -84,19 +89,17 @@ def create_files(source, target, dry_run, variables):
             if _fn and _root and not contains_blanks(_root):
                 source_path = source.joinpath(root, fn)
                 target_path = target.joinpath(_root, _fn)
-                if dry_run:
-                    print("New file:", str(target_path))
-                else:
-                    try:
-                        if not source_path.suffix.lower() in binary_suffixes:
-                            full_content = source_path.read_text()
-                            full_content = render(full_content)
-                            target_path.write_text(full_content)
-                        else:
-                            shutil.copy(source_path, target_path)
-                    except UnicodeDecodeError as err:
-                        print("WARNING: {} can not be rendered with Jinja2. UnicodeDecodeError: {}".format(source_path.name, str(err)))
-                        shutil.copy(source_path, target_path)
+
+                try:
+                    if not source_path.suffix.lower() in binary_suffixes:
+                        full_content = medium.read_text(source_path)
+                        full_content = render(full_content)
+                        medium.write_text(target_path, full_content)
+                    else:
+                        medium.copy(source_path, target_path)
+                except UnicodeDecodeError as err:
+                    print("WARNING: {} can not be rendered with Jinja2. UnicodeDecodeError: {}".format(source_path.name, str(err)))
+                    medium.copy(source_path, target_path)
 
 _os_sep = os.path.sep
 _os_sep_dbl = _os_sep + _os_sep

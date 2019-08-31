@@ -134,3 +134,12 @@ def test_create_files():
         target.joinpath.assert_called_once_with("en", "fn")
         source_path.read_text.assert_called_once()
         target_path.write_text.assert_called_once_with("stuff")
+
+def test_setup():
+
+    subparser = Mock()
+    subparser.add_parser.return_value = subparser
+
+    make_project.setup(subparser)
+
+    subparser.set_defaults.assert_called_once_with(func=make_project.make_project)

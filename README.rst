@@ -1,5 +1,5 @@
-Make
-====
+Make-Project
+============
 
 * Source Code: https://github.com/fholmer/make
 * PyPI: https://pypi.org/project/make/

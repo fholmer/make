@@ -2,21 +2,20 @@ import argparse
 from unittest.mock import Mock, patch
 from make import __main__
 
-@patch(
-    'argparse.ArgumentParser.parse_args',
-     return_value=argparse.Namespace(conf_type="project")
-)
-def test_conf_type_project(parse_args):
-    with patch.dict(__main__.ConfTypes, {"project":Mock()}):
-        __main__.main()
-        __main__.ConfTypes['project'].assert_called_once_with(args=parse_args())
+@patch('argparse.ArgumentParser.parse_args')
+def test_func_none(parse_args):
+    parse_args.return_value=argparse.Namespace(func=None)
 
-@patch(
-    'argparse.ArgumentParser.parse_args',
-     return_value=argparse.Namespace(conf_type="get")
-)
-def test_conf_type_get(parse_args):
-    with patch.dict(__main__.ConfTypes, {"get":Mock()}):
-        __main__.main()
-        __main__.ConfTypes['get'].assert_called_once_with(args=parse_args())
+    __main__.main()
 
+    parse_args.assert_called_once_with()
+
+@patch('argparse.ArgumentParser.parse_args')
+def test_func_callback(parse_args):
+    func = Mock()
+    parse_args.return_value=argparse.Namespace(func=func)
+
+    __main__.main()
+
+    parse_args.assert_called_once_with()
+    func.assert_called_once_with(args=parse_args())

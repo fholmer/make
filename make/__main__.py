@@ -1,13 +1,13 @@
 from argparse import ArgumentParser
 
-from .make_project.make_project import Abort, Invalid, make_project
-from .make_get.make_get import make_get
+from .errors import Abort, Invalid
+from .make_project import make_project
+from .make_get import make_get
 
-ConfTypes = {
-    "project": make_project,
-    "get": make_get
-}
-
+SetupFunctions = [
+    make_project.setup,
+    make_get.setup
+]
 
 def main():
     """
@@ -28,15 +28,20 @@ def main():
     """
 
     global_parser = ArgumentParser(add_help=True)
-    global_parser.add_argument("conf_type", type=str, help="configuration type")
-    global_parser.add_argument("source", type=str, help="source dir")
-    global_parser.add_argument("target", type=str, nargs='?', default=".", help="target dir")
-    global_parser.add_argument("--dry-run", action="store_true", help="test run")
+    global_parser.set_defaults(func=None)
+    subparsers = global_parser.add_subparsers(
+        title="Commands",
+        description="Additional help for commands: {command} --help"
+    )
+
+    for setup in SetupFunctions:
+        setup(subparsers)
+
     args = global_parser.parse_args()
 
-    if args.conf_type and args.conf_type in ConfTypes:
+    if args.func:
         try:
-            ConfTypes[args.conf_type](args=args)
+            args.func(args=args)
         except Invalid as error:
             print("{}".format(error))
         except Abort as error:

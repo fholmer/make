@@ -8,6 +8,15 @@ from .parsers import ini_parser , json_parser, cookiecutter_parser
 from ..errors import Abort, Invalid, ParserNotFound
 from ..template import Template, binary_suffixes, root_exclude
 
+
+def setup(subparsers):
+    parser = subparsers.add_parser('project', help='Create project from template')
+    parser.add_argument("source", type=str, help="source dir")
+    parser.add_argument("target", type=str, nargs='?', default=".", help="target dir")
+    parser.add_argument("--dry-run", action="store_true", help="test run")
+    parser.set_defaults(func=make_project)
+
+
 Parsers = {
     "ini_parser": ini_parser.get_vars,
     "json_parser": json_parser.get_vars,

@@ -16,7 +16,7 @@ def make_zipobj(source, zip_sub_path):
     else:
         path = "/"
 
-    return pathlib.PosixPath(path), zipobj
+    return pathlib.PurePosixPath(path), zipobj
 
 
 class LocalTargetAndZipSource(Local):

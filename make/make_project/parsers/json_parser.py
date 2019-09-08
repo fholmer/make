@@ -3,6 +3,7 @@ import json
 from ...errors import Invalid, ParserNotFound
 from ...template import Template
 
+
 def get_vars(source_medium, dry_run, interactive=True):
     """
         Parse given file and copy the content to a dict of dicts.
@@ -62,12 +63,13 @@ def question_from_string(quest, ion):
         return vtype(reply)
     return ion
 
+
 def _safe_bool(boolstr):
     _bool = boolstr.lower()
     if _bool in ("1", "on", "t", "true", "yes", "y") or _bool.startswith("true"):
         return True
     return False
-    
+
 
 def question_from_list(question, choices):
     size = len(choices)

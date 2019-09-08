@@ -1,13 +1,14 @@
-import shutil
 import glob
 import os
 import pathlib
+import shutil
+
+from ...errors import Abort
 from ...template import root_exclude
 from .base import DataMediumBase
-from ...errors import Abort
+
 
 class Local(DataMediumBase):
-
     def __init__(self, root):
         self.root = self.get_absolute_as_Path(root)
 
@@ -22,7 +23,7 @@ class Local(DataMediumBase):
     @staticmethod
     def mkdir(target):
         target.mkdir(parents=True)
-        #os.makedirs(str(target_path))
+        # os.makedirs(str(target_path))
 
     @staticmethod
     def write_text(target, content):
@@ -45,10 +46,10 @@ class Local(DataMediumBase):
         shutil.copy(source, target)
 
     def acquire(self):
-        pass # TODO: make sure filesystem is mounted
+        pass  # TODO: make sure filesystem is mounted
 
     def release(self):
-        pass # TODO:
+        pass  # TODO:
         # make sure filesystem is unmounted if it was not already
         # mounted
 

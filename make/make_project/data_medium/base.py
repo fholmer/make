@@ -1,7 +1,8 @@
 import os
 import pathlib
 
-class DataMediumBase():
+
+class DataMediumBase:
     os_sep = os.path.sep
     os_sep_dbl = os.path.sep + os.path.sep
 
@@ -62,4 +63,3 @@ class DataMediumBase():
     @staticmethod
     def release():
         raise NotImplementedError
-

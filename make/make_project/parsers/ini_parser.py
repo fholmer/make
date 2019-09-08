@@ -4,6 +4,7 @@ from configparser import ConfigParser
 from ...errors import Invalid, ParserNotFound
 from ...template import Template
 
+
 def get_vars(source_medium, dry_run, interactive=True):
     """
         Parse given file and copy the content to a dict of dicts.

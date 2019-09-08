@@ -1,5 +1,6 @@
 import argparse
-from unittest.mock import Mock, patch, mock_open
+from unittest.mock import Mock, mock_open, patch
+
 from make.make_project.parsers import cookiecutter_parser
 
 JSON_STR = """{
@@ -7,6 +8,7 @@ JSON_STR = """{
     "package": "{{ cookiecutter.name.lower().replace('-', '_') }}"
 }
 """
+
 
 def test_get_vars():
 
@@ -24,8 +26,5 @@ def test_get_vars():
 
     assert isinstance(variables, dict)
     assert variables == {
-        "cookiecutter": {
-            "name": "A-Project-Name",
-            "package": "a_project_name"
-        }
+        "cookiecutter": {"name": "A-Project-Name", "package": "a_project_name"}
     }

@@ -1,6 +1,8 @@
 from pathlib import Path
 from urllib.request import urlretrieve
+
 from ..errors import Abort
+
 
 def make_get(args):
     """
@@ -15,8 +17,9 @@ def make_get(args):
     print("Into    : ", target)
     urlretrieve(source, target)
 
+
 def setup(subparsers):
-    parser = subparsers.add_parser('get', help='Download source and store as target')
+    parser = subparsers.add_parser("get", help="Download source and store as target")
     parser.add_argument("source", type=str, help="source URL")
-    parser.add_argument("target", type=str, nargs='?', default=".", help="target dir")
+    parser.add_argument("target", type=str, nargs="?", default=".", help="target dir")
     parser.set_defaults(func=make_get)

@@ -1,12 +1,14 @@
 import argparse
 from configparser import ConfigParser
 from unittest.mock import Mock, patch
+
 from make.make_project.parsers import ini_parser
 
 INI_STR = """[project]
 name = A-Project-Name
 package = {{ project.name.lower().replace('-', '_') }}
 """
+
 
 def test_get_vars():
 
@@ -24,8 +26,5 @@ def test_get_vars():
 
     assert isinstance(variables, dict)
     assert variables == {
-        "project": {
-            "name": "A-Project-Name",
-            "package": "a_project_name"
-        }
+        "project": {"name": "A-Project-Name", "package": "a_project_name"}
     }

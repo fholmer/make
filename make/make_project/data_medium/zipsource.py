@@ -1,18 +1,20 @@
 import io
-import zipfile
 import pathlib
-from .local import Local
-from ...template import root_exclude
+import zipfile
+
 from ...errors import Abort
+from ...template import root_exclude
+from .local import Local
+
 
 def make_zipobj(source, zip_sub_path):
-    content = io.BytesIO(open(source, 'rb').read())
+    content = io.BytesIO(open(source, "rb").read())
     zipobj = zipfile.ZipFile(content)
 
     if zip_sub_path:
         path = zip_sub_path
     else:
-        path = '/'
+        path = "/"
 
     return pathlib.PosixPath(path), zipobj
 
@@ -65,7 +67,7 @@ class LocalTargetAndZipSource(Local):
         root_index = len(source_str) + 1
 
         exclude = []
-        #for exc in root_exclude:
+        # for exc in root_exclude:
         #    exclude.extend(glob.glob(str(source.joinpath(exc))))
 
         for path in zipobject.filelist:

@@ -2,8 +2,8 @@ import json
 
 from ...errors import Invalid, ParserNotFound
 from ...template import Template
-
 from .json_parser import question, question_from_list, question_from_string
+
 
 def get_vars(source_medium, dry_run, interactive=True):
     """

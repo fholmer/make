@@ -1,5 +1,6 @@
 import argparse
-from unittest.mock import Mock, patch, mock_open
+from unittest.mock import Mock, mock_open, patch
+
 from make.make_project.parsers import json_parser
 
 JSON_STR = """{
@@ -9,6 +10,7 @@ JSON_STR = """{
     }
 }
 """
+
 
 def test_get_vars():
 
@@ -26,8 +28,5 @@ def test_get_vars():
 
     assert isinstance(variables, dict)
     assert variables == {
-        "project": {
-            "name": "A-Project-Name",
-            "package": "a_project_name"
-        }
+        "project": {"name": "A-Project-Name", "package": "a_project_name"}
     }

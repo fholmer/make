@@ -1,11 +1,12 @@
-
-from unittest.mock import patch
-from make.make_project.data_medium.base import DataMediumBase
+import ntpath
 import os
 import posixpath
-import ntpath
+from unittest.mock import patch
+
+from make.make_project.data_medium.base import DataMediumBase
 
 _sep = os.path.sep
+
 
 def test_contain_blanks():
     assert DataMediumBase.contains_blanks("root{0}".format(_sep))

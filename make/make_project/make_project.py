@@ -2,20 +2,26 @@ import os
 import pathlib
 from functools import partial
 
-from .parsers import ini_parser , json_parser, cookiecutter_parser
-from .data_medium import dry_run, local, zipsource
 from ..errors import Abort, Invalid, ParserNotFound
 from ..template import Template, binary_suffixes
+from .data_medium import dry_run, local, zipsource
+from .parsers import cookiecutter_parser, ini_parser, json_parser
 
 
 def setup(subparsers):
-    parser = subparsers.add_parser('project', help='Create project from template')
+    parser = subparsers.add_parser("project", help="Create project from template")
     parser.add_argument("source", type=str, help="source dir")
-    parser.add_argument("target", type=str, nargs='?', default=".", help="target dir")
+    parser.add_argument("target", type=str, nargs="?", default=".", help="target dir")
     parser.add_argument("--dry-run", action="store_true", help="test run")
     parser.add_argument("-z", "--zip", action="store_true", help="source is a zip file")
-    parser.add_argument("-zp", "--zip-sub-path", type=str, default="", help="a sub path within a zip file")
-    #entrypoint for this subparser
+    parser.add_argument(
+        "-zp",
+        "--zip-sub-path",
+        type=str,
+        default="",
+        help="a sub path within a zip file",
+    )
+    # entrypoint for this subparser
     parser.set_defaults(func=make_project)
 
 
@@ -27,17 +33,19 @@ def post_hook(args):
     # so we do this translation right here:
     pass
 
+
 Parsers = {
     "ini_parser": ini_parser.get_vars,
     "json_parser": json_parser.get_vars,
-    "cookiecutter_parser": cookiecutter_parser.get_vars
+    "cookiecutter_parser": cookiecutter_parser.get_vars,
 }
 
 Medium = {
     "local": local.Local,
     "dry_run": dry_run.DryRun,
-    "zip": zipsource.LocalTargetAndZipSource
+    "zip": zipsource.LocalTargetAndZipSource,
 }
+
 
 def _render(kwargs, string):
     """
@@ -92,8 +100,10 @@ def get_source_medium(args):
         medium_class = Medium["local"]
 
     if args.dry_run:
+
         class _dryrun(Medium["dry_run"], medium_class):
-            pass # override
+            pass  # override
+
         medium_class = _dryrun
 
     if args.zip:
@@ -106,8 +116,10 @@ def get_source_medium(args):
 def get_target_medium(args):
     medium_class = Medium["local"]
     if args.dry_run:
+
         class _dryrun(Medium["dry_run"], medium_class):
-            pass # override
+            pass  # override
+
         medium_class = _dryrun
     return medium_class(args.target)
 
@@ -140,9 +152,13 @@ def create_files(source_medium, target_medium, variables):
                         # medium.copy(source_path, target_path)
                         full_content = source_medium.read_bytes(source_path)
                         target_medium.write_bytes(target_path, full_content)
-                        
+
                 except UnicodeDecodeError as err:
-                    print("WARNING: {} can not be rendered with Jinja2. UnicodeDecodeError: {}".format(source_path.name, str(err)))
-                    #medium.copy(source_path, target_path)
+                    print(
+                        "WARNING: {} can not be rendered with Jinja2. UnicodeDecodeError: {}".format(
+                            source_path.name, str(err)
+                        )
+                    )
+                    # medium.copy(source_path, target_path)
                     full_content = source_medium.read_bytes(source_path)
                     target_medium.write_bytes(target_path, full_content)

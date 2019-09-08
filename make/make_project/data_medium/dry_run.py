@@ -1,5 +1,6 @@
 from .base import DataMediumBase
 
+
 class DryRun(DataMediumBase):
     @staticmethod
     def mkdir(target):

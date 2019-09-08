@@ -1,13 +1,11 @@
 from argparse import ArgumentParser
 
 from .errors import Abort, Invalid
-from .make_project import make_project
 from .make_get import make_get
+from .make_project import make_project
 
-SetupFunctions = [
-    make_project.setup,
-    make_get.setup
-]
+SetupFunctions = [make_project.setup, make_get.setup]
+
 
 def main():
     """
@@ -30,8 +28,7 @@ def main():
     global_parser = ArgumentParser(add_help=True)
     global_parser.set_defaults(func=None)
     subparsers = global_parser.add_subparsers(
-        title="Commands",
-        description="Additional help for commands: {command} --help"
+        title="Commands", description="Additional help for commands: {command} --help"
     )
 
     for setup in SetupFunctions:

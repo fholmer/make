@@ -1,13 +1,11 @@
 import os
 import pathlib
 from functools import partial
-import shutil
-import glob
 
 from .parsers import ini_parser , json_parser, cookiecutter_parser
-from .data_medium import dry_run, local
+from .data_medium import dry_run, local, zipsource
 from ..errors import Abort, Invalid, ParserNotFound
-from ..template import Template, binary_suffixes, root_exclude
+from ..template import Template, binary_suffixes
 
 
 def setup(subparsers):
@@ -15,8 +13,19 @@ def setup(subparsers):
     parser.add_argument("source", type=str, help="source dir")
     parser.add_argument("target", type=str, nargs='?', default=".", help="target dir")
     parser.add_argument("--dry-run", action="store_true", help="test run")
+    parser.add_argument("-z", "--zip", action="store_true", help="source is a zip file")
+    parser.add_argument("-zp", "--zip-sub-path", type=str, default="", help="a sub path within a zip file")
+    #entrypoint for this subparser
     parser.set_defaults(func=make_project)
 
+
+def post_hook(args):
+    # To the user the source can be a path in local filesystem or the name
+    # of a zipfile.
+    # But to us the source is always a path, it is never a name of a file.
+    # the source is a path in the local filesystem or a path inside a zipfile.
+    # so we do this translation right here:
+    pass
 
 Parsers = {
     "ini_parser": ini_parser.get_vars,
@@ -26,7 +35,8 @@ Parsers = {
 
 Medium = {
     "local": local.Local,
-    "dry_run": dry_run.DryRun
+    "dry_run": dry_run.DryRun,
+    "zip": zipsource.LocalTargetAndZipSource
 }
 
 def _render(kwargs, string):
@@ -48,18 +58,20 @@ def make_project(args):
         * Parses ``project.conf``
         * copy and transform files in source to target.
     """
-    source = pathlib.Path(args.source).absolute()
-    target = pathlib.Path(args.target).absolute()
 
-    if not source.is_dir():
-        raise Abort("Source %s does not exists" % source)
+    source_medium = get_source_medium(args)
+    target_medium = get_target_medium(args)
 
-    if target.is_dir():
-        raise Abort("Target %s already exists" % target)
+    source_medium.acquire()
+    target_medium.acquire()
 
+    source_medium.ensure_source()
+    target_medium.ensure_target()
+
+    # run parser
     for parser in Parsers.values():
         try:
-            variables = parser(args=args)
+            variables = parser(source_medium=source_medium, dry_run=args.dry_run)
             if not variables is None:
                 break
         except ParserNotFound:
@@ -67,77 +79,70 @@ def make_project(args):
     else:
         raise Abort("cannot parse source directory")
 
-    if args.dry_run:
-        data_medium_interface = Medium["dry_run"]
-    else:
-        data_medium_interface = Medium["local"]
-    create_files(source, target, data_medium_interface, variables)
+    create_files(source_medium, target_medium, variables)
 
-def create_files(source, target, medium, variables):
+    source_medium.release()
+    target_medium.release()
+
+
+def get_source_medium(args):
+    if args.zip:
+        medium_class = Medium["zip"]
+    else:
+        medium_class = Medium["local"]
+
+    if args.dry_run:
+        class _dryrun(Medium["dry_run"], medium_class):
+            pass # override
+        medium_class = _dryrun
+
+    if args.zip:
+        medium = medium_class(args.source, args.zip_sub_path)
+    else:
+        medium = medium_class(args.source)
+    return medium
+
+
+def get_target_medium(args):
+    medium_class = Medium["local"]
+    if args.dry_run:
+        class _dryrun(Medium["dry_run"], medium_class):
+            pass # override
+        medium_class = _dryrun
+    return medium_class(args.target)
+
+
+def create_files(source_medium, target_medium, variables):
     render = partial(_render, variables)
-    for action, root, fn in iter_filenames(source):
+    source = source_medium.root
+    target = target_medium.root
+    for action, root, fn in source_medium.iter_filenames(source):
         if action == 1:
             _root = render(root)
-            if _root and not contains_blanks(_root):
-                target_path = target.joinpath(_root)
-                medium.mkdir(target_path)
+            if _root and not target_medium.contains_blanks(_root):
+                target_path = target_medium.joinpath(target, _root)
+                target_medium.mkdir(target_path)
         elif action == 2:
             _root = render(root)
             _fn = render(fn)
             # files in the root folder is ignored and files or folders with blank
             # name is also ignored
-            if _fn and _root and not contains_blanks(_root):
-                source_path = source.joinpath(root, fn)
-                target_path = target.joinpath(_root, _fn)
+            if _fn and _root and not target_medium.contains_blanks(_root):
+                source_path = source_medium.joinpath(source, root, fn)
+                target_path = target_medium.joinpath(target, _root, _fn)
 
                 try:
                     if not source_path.suffix.lower() in binary_suffixes:
-                        full_content = medium.read_text(source_path)
+                        full_content = source_medium.read_text(source_path)
                         full_content = render(full_content)
-                        medium.write_text(target_path, full_content)
+                        target_medium.write_text(target_path, full_content)
                     else:
-                        medium.copy(source_path, target_path)
+                        # medium.copy(source_path, target_path)
+                        full_content = source_medium.read_bytes(source_path)
+                        target_medium.write_bytes(target_path, full_content)
+                        
                 except UnicodeDecodeError as err:
                     print("WARNING: {} can not be rendered with Jinja2. UnicodeDecodeError: {}".format(source_path.name, str(err)))
-                    medium.copy(source_path, target_path)
-
-_os_sep = os.path.sep
-_os_sep_dbl = _os_sep + _os_sep
-
-def contains_blanks(pth):
-    return (_os_sep_dbl in pth) or pth.endswith(_os_sep)
-
-def iter_filenames(source):
-    """
-        Walk through all files and yield one of the following:
-
-        * (1, rootdir, dirname, None)
-        * (2, rootdir, dirname, filename)
-
-        Usage:
-
-        .. code-block:: python
-
-            for action, root, dn, fn in iter_filenames(some_dir):
-                if action == 1:
-                    print("I am {root}/{dn}, the directory)
-                elif action == 2:
-                    print("I am not")
-    """
-
-    root_index = len(str(source)) + 1
-
-    exclude = []
-    for exc in root_exclude:
-        exclude.extend(glob.glob(str(source.joinpath(exc))))
-
-    for full_root, _dirs, files in os.walk(str(source)):
-        root = full_root[root_index:]
-        skip = False
-        for exc in exclude:
-            if full_root.startswith(exc):
-                skip = True
-        if not skip:
-            yield 1, root, None
-            for fn in files:
-                yield 2, root, fn
+                    #medium.copy(source_path, target_path)
+                    full_content = source_medium.read_bytes(source_path)
+                    target_medium.write_bytes(target_path, full_content)

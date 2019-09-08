@@ -1,35 +1,33 @@
 import json
-import pathlib
 from configparser import ConfigParser
 
 from ...errors import Invalid, ParserNotFound
 from ...template import Template
 
-def get_vars(args, interactive=True):
+def get_vars(source_medium, dry_run, interactive=True):
     """
         Parse given file and copy the content to a dict of dicts.
 
         Also, the values are rendered with jinja2 template.
 
     """
-
-    project_conf = pathlib.Path(args.source).absolute().joinpath("project.conf")
-    if not project_conf.is_file():
+    source = source_medium.root
+    project_conf = source_medium.joinpath(source, "project.conf")
+    if not source_medium.exists(project_conf):
         raise ParserNotFound("Config %s does not exists" % project_conf)
 
     config = ConfigParser()
 
     # This trick allows the option key to remain case-sensitive
     config.optionxform = str
-    config.read(str(project_conf), encoding="utf8")
-
+    config.read_string(source_medium.read_text(project_conf))
     variables = {}
 
     for section in config.sections():
         section_dict = dict(config[section])
         variables[section] = section_dict
 
-        if args.dry_run:
+        if dry_run:
             print("Section:", section, project_conf)
 
         for key, val in section_dict.items():
@@ -37,7 +35,7 @@ def get_vars(args, interactive=True):
             _val = Template(val).render(variables)
             if interactive and not is_hidden:
                 _val = question(key, _val)
-            if args.dry_run:
+            if dry_run:
                 print("Choice: ", key, "=", _val)
 
             variables[section][key] = _val

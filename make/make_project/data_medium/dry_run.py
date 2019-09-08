@@ -10,9 +10,8 @@ class DryRun(DataMediumBase):
         print("Create file:", str(target))
 
     @staticmethod
-    def read_text(source):
-        print("Read file:", str(source))
-        return ""
+    def write_bytes(target, content):
+        print("Create file:", str(target))
 
     @staticmethod
     def copy(source, target):

@@ -1,10 +1,9 @@
 import json
-import pathlib
 
 from ...errors import Invalid, ParserNotFound
 from ...template import Template
 
-def get_vars(args, interactive=True):
+def get_vars(source_medium, dry_run, interactive=True):
     """
         Parse given file and copy the content to a dict of dicts.
 
@@ -12,12 +11,12 @@ def get_vars(args, interactive=True):
 
     """
 
-    project_conf = pathlib.Path(args.source).absolute().joinpath("project.json")
-    if not project_conf.is_file():
+    source = source_medium.root
+    project_conf = source_medium.joinpath(source, "project.json")
+    if not source_medium.exists(project_conf):
         raise ParserNotFound("Config %s does not exists" % project_conf)
 
-    with open(str(project_conf), "r") as f:
-        variables = json.load(f)
+    variables = json.loads(source_medium.read_text(project_conf))
 
     if not isinstance(variables, dict):
         raise Invalid("root object have to be of type dict")
@@ -27,7 +26,7 @@ def get_vars(args, interactive=True):
         if not isinstance(section_dict, dict):
             raise Invalid("section '{}' have to be of type dict".format(section))
 
-        if args.dry_run:
+        if dry_run:
             print("Section:", section, project_conf)
 
         for key, val in section_dict.items():
@@ -36,7 +35,7 @@ def get_vars(args, interactive=True):
                 val = Template(val).render(variables)
             if interactive and not is_hidden:
                 val = question(key, val)
-            if args.dry_run:
+            if dry_run:
                 print("Choice: ", key, "=", val)
 
             variables[section][key] = val

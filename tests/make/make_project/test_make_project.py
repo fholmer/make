@@ -1,140 +1,103 @@
 import argparse
-import pathlib
 import time
-import os
-import posixpath
-import ntpath
 import pytest
+import pathlib
 from unittest.mock import Mock, patch
 from make.make_project import make_project
-from make.make_project.data_medium.local import Local
 from make import errors
-
-_sep = os.path.sep
+from make.make_project.data_medium.local import Local
 
 def test__render_simple():
     assert "one:1" == make_project._render({"one":"1"}, "one:{{ one }}")
 
+
 def test__render_extensions():
     assert time.strftime("%Y") == make_project._render({}, "{% now 'local', '%Y' %}")
 
-def test_contain_blanks():
-    assert make_project.contains_blanks("root{0}".format(_sep))
-    assert make_project.contains_blanks("root{0}{0}dir".format(_sep))
-    assert make_project.contains_blanks("root{0}dir{0}".format(_sep))
-    assert not make_project.contains_blanks("root{0}dir".format(_sep))
-
-    with patch.object(make_project, "_os_sep", posixpath.sep):
-        with patch.object(make_project, "_os_sep_dbl", posixpath.sep + posixpath.sep):
-            assert make_project.contains_blanks("root/")
-            assert make_project.contains_blanks("root//dir")
-            assert make_project.contains_blanks("root/dir/")
-            assert not make_project.contains_blanks("root/dir")
-
-    with patch.object(make_project, "_os_sep", ntpath.sep):
-        with patch.object(make_project, "_os_sep_dbl", ntpath.sep + ntpath.sep):
-            assert make_project.contains_blanks("root\\")
-            assert make_project.contains_blanks("root\\\\dir")
-            assert make_project.contains_blanks("root\\dir\\")
-            assert not make_project.contains_blanks("root/dir")
-
-@patch(
-    'os.walk',
-     side_effect=[[
-         ("src", ["en"], []),
-         ("src/en", [], ["to", "tre"]),
-     ]]
-)
-def test_iter_filenames(walk):
-    walker = make_project.iter_filenames(pathlib.Path("src"))
-    assert (1, "", None) == next(walker)
-    assert (1, "en", None) == next(walker)
-    assert (2, "en", "to") == next(walker)
-    assert (2, "en", "tre") == next(walker)
-    with pytest.raises(StopIteration):
-         next(walker)
 
 def test_make_project_file_not_exists():
     with pytest.raises(errors.Abort):
         make_project.Parsers = {}
         make_project.make_project(
-            args=argparse.Namespace(source="src", target="dst")
+            args=argparse.Namespace(source="src", target="dst", zip=False, dry_run=False)
         )
 
     with pytest.raises(errors.Abort):
         make_project.Parsers = {}
         make_project.make_project(
-            args=argparse.Namespace(source=".", target=".")
+            args=argparse.Namespace(source=".", target=".", zip=False, dry_run=False)
         )
 
     with pytest.raises(errors.Abort):
         make_project.Parsers = {}
         make_project.make_project(
-            args=argparse.Namespace(source=".", target="dst")
+            args=argparse.Namespace(source=".", target="dst", zip=False, dry_run=False)
         )
 
 
+@patch.object(make_project, "get_target_medium")
+@patch.object(make_project, "get_source_medium")
 @patch.object(make_project, "create_files")
-def test_make_project_file_exists(create_files):
+def test_make_project_file_exists(create_files, get_source_medium, get_target_medium):
+    source_medium = Mock()
+    target_medium = Mock()
+    get_source_medium.return_value = source_medium
+    get_target_medium.return_value = target_medium
 
-    path = Mock()
-    path.absolute.return_value = path
-    path.is_dir.side_effect = [True, False]
-
-    def check_parser_callback(args):
-        assert isinstance(args, argparse.Namespace) 
+    def check_parser_callback(source_medium, dry_run):
+        assert source_medium is source_medium
         return {"proj":{"test":1}}
 
     with patch.dict(make_project.Parsers, {"parser":check_parser_callback}):
 
-        with patch("pathlib.Path", return_value=path):
+        make_project.make_project(
+            args=argparse.Namespace(source="src", target="dst", dry_run=False)
+        )
 
-            #make_project.Parsers = {"parser":check_parser_callback}
-            make_project.make_project(
-                args=argparse.Namespace(source="src", target="dst", dry_run=False)
-            )
-
-            assert path.absolute.call_count == 2
-            create_files.assert_called_once_with(path, path, Local, {"proj":{"test":1}})
+        create_files.assert_called_once_with(source_medium, target_medium, {"proj":{"test":1}})
 
 
 def test_create_dirs():
-    source = Mock()
-    target = Mock()
-    target_path = Mock()
-    target.joinpath.return_value = target_path
+    source_medium = Mock()
+    target_medium = Mock()
+
+    source_medium.root = pathlib.Path("src")
+    target_medium.root = pathlib.Path("dst")
+
+    target_medium.joinpath = Local.joinpath
+    target_medium.contains_blanks = Local.contains_blanks
 
     variables = {"dir":{"name":"en"}}
-
     dirs = [[(1, "", None), (1, "{{dir.name}}", None)]]
+    source_medium.iter_filenames.side_effect = dirs
 
-    with patch.object(make_project, "iter_filenames", side_effect=dirs):
-        make_project.create_files(source, target, Local, variables)
+    make_project.create_files(source_medium, target_medium, variables)
 
-        target.joinpath.assert_called_once_with("en")
-        target_path.mkdir.assert_called_once()
+    target_medium.mkdir.assert_called_once_with(target_medium.root.joinpath("en"))
 
 def test_create_files():
-    source = Mock()
-    source_path = Mock()
-    target = Mock()
-    target_path = Mock()
+    source_medium = Mock()
+    target_medium = Mock()
 
-    source.joinpath.return_value = source_path
-    target.joinpath.return_value = target_path
+    source_medium.root = pathlib.Path("src")
+    target_medium.root = pathlib.Path("dst")
 
-    source_path.read_text.return_value = "{{ file.content }}"
+    source_medium.read_text.return_value = "{{ file.content }}"
+
+    target_medium.joinpath = Local.joinpath
+    target_medium.contains_blanks = Local.contains_blanks
 
     variables = {"file":{"name":"fn", "content":"stuff"}}
 
     dirs = [[(2, "", ""), (2, "en", ""), (2, "en", "{{file.name}}")]]
 
-    with patch.object(make_project, "iter_filenames", side_effect=dirs):
-        make_project.create_files(source, target, Local, variables)
+    source_medium.iter_filenames.side_effect = dirs
 
-        target.joinpath.assert_called_once_with("en", "fn")
-        source_path.read_text.assert_called_once()
-        target_path.write_text.assert_called_once_with("stuff")
+    make_project.create_files(source_medium, target_medium, variables)
+
+    source_medium.read_text.assert_called_once()
+    _dst = target_medium.root.joinpath("en", "fn")
+    target_medium.write_text.assert_called_once_with(_dst, "stuff")
 
 def test_setup():
 

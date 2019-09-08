@@ -10,29 +10,22 @@ package = {{ project.name.lower().replace('-', '_') }}
 
 def test_get_vars():
 
-    path = Mock()
-    path.absolute.return_value = path
-    path.joinpath.return_value = path
-    path.is_file.return_value = True
+    source_medium = Mock()
+    source_medium.root = "/"
+    source_medium.joinpath.return_value = "/cookiecutter.json"
+    source_medium.exists.return_value = True
+    source_medium.read_text.return_value = INI_STR
 
-    with patch("pathlib.Path", return_value=path):
+    variables = ini_parser.get_vars(source_medium, False, interactive=False)
 
-        conf = ConfigParser()
-        conf.read_string(INI_STR)
+    source_medium.joinpath.assert_called_once_with("/", "project.conf")
+    source_medium.exists.assert_called_once()
+    source_medium.read_text.assert_called_once()
 
-        with patch.object(ini_parser, "ConfigParser", return_value=conf):
-
-            args = argparse.Namespace(source=".", dry_run=False)
-            variables = ini_parser.get_vars(args, interactive=False)
-
-            path.absolute.assert_called_once_with()
-            path.joinpath.assert_called_once_with("project.conf")
-            path.is_file.assert_called_once_with()
-
-            assert isinstance(variables, dict)
-            assert variables == {
-                "project": {
-                    "name": "A-Project-Name",
-                    "package": "a_project_name"
-                }
-            }
+    assert isinstance(variables, dict)
+    assert variables == {
+        "project": {
+            "name": "A-Project-Name",
+            "package": "a_project_name"
+        }
+    }

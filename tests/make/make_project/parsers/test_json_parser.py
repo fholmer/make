@@ -12,26 +12,22 @@ JSON_STR = """{
 
 def test_get_vars():
 
-    path = Mock()
-    path.absolute.return_value = path
-    path.joinpath.return_value = path
-    path.is_file.return_value = True
+    source_medium = Mock()
+    source_medium.root = "/"
+    source_medium.joinpath.return_value = "/project.json"
+    source_medium.exists.return_value = True
+    source_medium.read_text.return_value = JSON_STR
 
-    with patch("pathlib.Path", return_value=path):
+    variables = json_parser.get_vars(source_medium, False, interactive=False)
 
-        with patch.object(json_parser, 'open', mock_open(read_data=JSON_STR)):
+    source_medium.joinpath.assert_called_once_with("/", "project.json")
+    source_medium.exists.assert_called_once()
+    source_medium.read_text.assert_called_once()
 
-            args = argparse.Namespace(source=".", dry_run=False)
-            variables = json_parser.get_vars(args, interactive=False)
-
-            path.absolute.assert_called_once_with()
-            path.joinpath.assert_called_once_with("project.json")
-            path.is_file.assert_called_once_with()
-
-            assert isinstance(variables, dict)
-            assert variables == {
-                "project": {
-                    "name": "A-Project-Name",
-                    "package": "a_project_name"
-                }
-            }
+    assert isinstance(variables, dict)
+    assert variables == {
+        "project": {
+            "name": "A-Project-Name",
+            "package": "a_project_name"
+        }
+    }

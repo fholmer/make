@@ -10,26 +10,22 @@ JSON_STR = """{
 
 def test_get_vars():
 
-    path = Mock()
-    path.absolute.return_value = path
-    path.joinpath.return_value = path
-    path.is_file.return_value = True
+    source_medium = Mock()
+    source_medium.root = "/"
+    source_medium.joinpath.return_value = "/cookiecutter.json"
+    source_medium.exists.return_value = True
+    source_medium.read_text.return_value = JSON_STR
 
-    with patch("pathlib.Path", return_value=path):
+    variables = cookiecutter_parser.get_vars(source_medium, False, interactive=False)
 
-        with patch.object(cookiecutter_parser, 'open', mock_open(read_data=JSON_STR)):
+    source_medium.joinpath.assert_called_once_with("/", "cookiecutter.json")
+    source_medium.exists.assert_called_once()
+    source_medium.read_text.assert_called_once()
 
-            args = argparse.Namespace(source=".", dry_run=False)
-            variables = cookiecutter_parser.get_vars(args, interactive=False)
-
-            path.absolute.assert_called_once_with()
-            path.joinpath.assert_called_once_with("cookiecutter.json")
-            path.is_file.assert_called_once_with()
-
-            assert isinstance(variables, dict)
-            assert variables == {
-                "cookiecutter": {
-                    "name": "A-Project-Name",
-                    "package": "a_project_name"
-                }
-            }
+    assert isinstance(variables, dict)
+    assert variables == {
+        "cookiecutter": {
+            "name": "A-Project-Name",
+            "package": "a_project_name"
+        }
+    }

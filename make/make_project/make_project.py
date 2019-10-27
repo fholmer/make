@@ -85,7 +85,7 @@ def make_project(args):
         except ParserNotFound:
             pass
     else:
-        raise Abort("cannot parse source directory")
+        raise Abort("cannot parse source directory: {}".format(source_medium.root))
 
     create_files(source_medium, target_medium, variables)
 
@@ -94,7 +94,8 @@ def make_project(args):
 
 
 def get_source_medium(args):
-    if args.zip:
+    is_zip = args.zip or zipsource.uri_is_zipfile(args.source)
+    if is_zip:
         medium_class = Medium["zip"]
     else:
         medium_class = Medium["local"]
@@ -106,7 +107,7 @@ def get_source_medium(args):
 
         medium_class = _dryrun
 
-    if args.zip:
+    if is_zip:
         medium = medium_class(args.source, args.zip_sub_path)
     else:
         medium = medium_class(args.source)

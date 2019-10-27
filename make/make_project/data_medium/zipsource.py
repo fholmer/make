@@ -3,7 +3,7 @@ import pathlib
 import zipfile
 
 from ...errors import Abort
-from ...make_get.make_get import retrive_from_url, can_retrieve
+from ...make_get.make_get import retrive_from_url, can_retrieve, uri_is_zipfile
 from ...template import root_exclude
 from .local import Local
 
@@ -47,11 +47,12 @@ class LocalTargetAndZipSource(Local):
     def acquire(self):
         # TODO: make sure filesystem is mounted
         if can_retrieve(self.zip_source):
-            zip_local_source = retrive_from_url(self.zip_source, "", "")
+            local_path, sub_path = retrive_from_url(self.zip_source, "", self.zip_sub_path)
         else:
-            zip_local_source = self.zip_source
+            local_path = self.zip_source
+            sub_path = self.zip_sub_path
 
-        self.root, self.zip = make_zipobj(zip_local_source, self.zip_sub_path)
+        self.root, self.zip = make_zipobj(local_path, sub_path)
 
     def release(self):
         pass  # TODO:

@@ -3,6 +3,7 @@ import pathlib
 import zipfile
 
 from ...errors import Abort
+from ...make_get.make_get import retrive_from_url, can_retrieve
 from ...template import root_exclude
 from .local import Local
 
@@ -14,7 +15,7 @@ def make_zipobj(source, zip_sub_path):
     if zip_sub_path:
         path = zip_sub_path
     else:
-        path = "/"
+        path = ""
 
     return pathlib.PurePosixPath(path), zipobj
 
@@ -24,10 +25,11 @@ class LocalTargetAndZipSource(Local):
     os_sep_dbl = "//"
 
     def __init__(self, zip_source, zip_sub_path):
-        self.root, self.zip = make_zipobj(zip_source, zip_sub_path)
+        self.zip_source = zip_source
+        self.zip_sub_path = zip_sub_path
 
     def exists(self, path):
-        path_str = str(path)
+        path_str = "/".join(path.parts)
         return path_str in self.zip.namelist()
 
     def read_text(self, source):
@@ -42,8 +44,22 @@ class LocalTargetAndZipSource(Local):
         zippath = "/".join(source.parts)
         self.zip.extract(zippath, str(target))
 
+    def acquire(self):
+        # TODO: make sure filesystem is mounted
+        if can_retrieve(self.zip_source):
+            zip_local_source = retrive_from_url(self.zip_source, "", "")
+        else:
+            zip_local_source = self.zip_source
+
+        self.root, self.zip = make_zipobj(zip_local_source, self.zip_sub_path)
+
+    def release(self):
+        pass  # TODO:
+        # make sure filesystem is unmounted if it was not already
+        # mounted
+
     def ensure_source(self):
-        source = str(self.root)
+        source = "/".join(self.root.parts)
         if not source.endswith("/"):
             source += "/"
         if not source in self.zip.namelist() and not source == "/":
@@ -63,8 +79,11 @@ class LocalTargetAndZipSource(Local):
         """
         zipobject = self.zip
 
-        source_str = str(source)
-        root_index = len(source_str) + 1
+        source_str = "/".join(source.parts)
+        if source_str == "":
+            root_index = 0
+        else:
+            root_index = len(source_str) + 1
 
         exclude = []
         # for exc in root_exclude:

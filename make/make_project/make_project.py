@@ -70,11 +70,11 @@ def make_project(args):
     source_medium = get_source_medium(args)
     target_medium = get_target_medium(args)
 
-    source_medium.acquire()
     target_medium.acquire()
-
-    source_medium.ensure_source()
     target_medium.ensure_target()
+
+    source_medium.acquire()
+    source_medium.ensure_source()
 
     # run parser
     for parser in Parsers.values():

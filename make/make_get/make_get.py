@@ -11,6 +11,11 @@ def make_get(args):
     """
     retrive_from_url(str(args.source), str(args.target), "")
 
+def can_retrieve(uri):
+    if isinstance(uri, str):
+        uri = parse.urlsplit(uri)
+    return not uri.scheme in ("file", "")
+
 def retrive_from_url(source, target, subpath):
     """
         Download ``source`` and store it to disk as ``target``
@@ -18,7 +23,7 @@ def retrive_from_url(source, target, subpath):
 
     uri = parse.urlsplit(source)
 
-    if uri.scheme in ("file", ""):
+    if not can_retrieve(uri):
         raise Abort("URI not supported: {}".format(source))
 
     if uri.scheme == "gh":
@@ -46,21 +51,34 @@ def retrive_from_url(source, target, subpath):
         )
         source = uri.geturl()
 
-    print(repr(target))
-    if target:
-        target = Path(target).absolute()
-    else:
-        target = Path(Path(uri.path).name).absolute()
-
+    target = abs_from_url(uri, target)
 
     if target.exists():
-        raise Abort("target file: {} already exists".format(target))
+        names = "\n".join(["1) Use existing", "2) Overwrite", "3) Cancel"])
+        question = "target file: {} already exists".format(target.name)
+        reply = input("{}\nOptions:\n{}\nChoose an option ([1], 2, 3): ".format(question, names))
+
+        if reply == "1" or reply == "":
+            return target
+        elif reply == "2":
+            pass
+        else:
+            raise Abort("Aborted by user")
 
     print("Download: ", source)
     print("Into    : ", target)
     urlretrieve(source, target)
     return target
 
+
+def abs_from_url(uri, target):
+    if isinstance(uri, str):
+        uri = parse.urlsplit(uri)
+    if target:
+        target = Path(target).absolute()
+    else:
+        target = Path(Path(uri.path).name).absolute()
+    return target
 
 def setup(subparsers):
     parser = subparsers.add_parser("get", help="Download source and store as target")

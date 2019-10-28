@@ -17,38 +17,65 @@ Installation
 
     $ pip install make
 
-Usage
------
-
-Download and unpack a template:
+or
 
 .. code-block:: console
 
-    $ python -m make get source-url target-path
-    $ python -m zipfile -e target-path .
+    $ pip install --user make
 
-Create a new project based on the downloaded template:
+
+Usage
+-----
+
+In general:
 
 .. code-block:: console
 
     $ python -m make project source-path target-path
 
-Example:
+Where ``source-path`` can be a local path:
 
-Download a project template.
+.. code-block:: console
+
+    $ python -m make project examples/ini_features New-Project
+
+A local zip file:
+
+.. code-block:: console
+
+    $ python -m make project examples/ini_features.zip New-Project
+
+Zip file over http or https:
+
+.. code-block:: console
+
+    $ python -m make project -zp simple-master https://gitlab.com/fholmer/simple/-/archive/master/simple-master.zip New-Project
+
+Short url for Github:
+
+.. code-block:: console
+
+    $ python -m make project gh:fholmer/simple New-Project
+
+And Gitlab:
+
+.. code-block:: console
+
+    $ python -m make project gl:fholmer/simple New-Project
+
+Sub dirs is also supported for Gitlab:
+
+.. code-block:: console
+
+    $ python -m make project gl:fholmer/templates/proj1 New-Project
+
+Simple cookiecutter templates is also supported.
+
 *We will use a popular cookiecutter template in this example*:
 
 .. code-block:: console
 
-    $ python -m make get https://github.com/kragniz/cookiecutter-pypackage-minimal/archive/master.zip pypackage.zip
-    $ python -m zipfile -e pypackage.zip .
-
-Create a new project:
-
-.. code-block:: console
-
-    $ python -m make project cookiecutter-pypackage-minimal-master New-Project
-
+    $ python -m make project gh:kragniz/cookiecutter-pypackage-minimal New-Project
 
 
 How to make your own project template

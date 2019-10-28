@@ -72,7 +72,6 @@ def retrive_from_url(source, target, subpath):
     """
         Download ``source`` and store it to disk as ``target``
     """
-
     uri = parse.urlsplit(source)
 
     if not can_retrieve(uri):
@@ -81,11 +80,12 @@ def retrive_from_url(source, target, subpath):
     uri, subpath = expand_uri(uri, subpath)
     source = uri.geturl()
 
-    target = abs_from_url(uri, target)
+    target_path = abs_from_url(uri, target)
+    target = str(target_path)
 
-    if target.exists():
+    if target_path.exists():
         names = "\n".join(["1) Use existing", "2) Overwrite", "3) Cancel"])
-        question = "target file: {} already exists".format(target.name)
+        question = "target file: {} already exists".format(target_path.name)
         reply = input("{}\nOptions:\n{}\nChoose an option ([1], 2, 3): ".format(question, names))
 
         if reply == "1" or reply == "":

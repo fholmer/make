@@ -67,7 +67,10 @@ class LocalTargetAndZipSource(Local):
             raise Abort("Source %s does not exists" % source)
 
     def ensure_target(self):
-        if self.root in self.zip.namelist():
+        target = "/".join(self.root.parts)
+        if not target.endswith("/"):
+            target += "/"
+        if target in self.zip.namelist():
             raise Abort("Target %s already exists" % self.root)
 
     def iter_filenames(self, source):

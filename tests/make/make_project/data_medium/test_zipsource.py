@@ -39,6 +39,7 @@ def test_iter_filenames(zipsource):
 
 
 def test_exists(zipsource):
+    assert zipsource.exists(pathlib.PurePosixPath("src/"))
     assert zipsource.exists(pathlib.PurePosixPath("src/en/to"))
     assert not zipsource.exists(pathlib.PurePosixPath("/src/no"))
 

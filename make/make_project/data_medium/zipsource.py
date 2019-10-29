@@ -30,7 +30,11 @@ class LocalTargetAndZipSource(Local):
 
     def exists(self, path):
         path_str = "/".join(path.parts)
-        return path_str in self.zip.namelist()
+        foundfile = path_str in self.zip.namelist()
+        if foundfile:
+            return foundfile
+        founddir = path_str+"/" in self.zip.namelist()
+        return founddir
 
     def read_text(self, source):
         zippath = "/".join(source.parts)

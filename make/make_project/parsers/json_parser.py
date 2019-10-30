@@ -76,7 +76,9 @@ def question_from_list(question, choices):
     names = "\n".join(["{}) {}".format(i + 1, e) for i, e in enumerate(choices)])
     numbers = "([1], {})".format(", ".join(map(str, range(2, size + 1))))
 
-    res = input("{}? Options:\n{}\nChoose an option {}: ".format(question, names, numbers))
+    res = input(
+        "{}? Options:\n{}\nChoose an option {}: ".format(question, names, numbers)
+    )
     ires = int(res or 1)
     if 0 < ires <= size:
         return choices[ires - 1]

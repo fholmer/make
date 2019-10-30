@@ -1,11 +1,11 @@
-from functools import namedtuple
 import pathlib
-from unittest.mock import patch, Mock
+from functools import namedtuple
+from unittest.mock import Mock, patch
 
 import pytest
 
-from make.make_project.data_medium.zipsource import make_zipobj, LocalTargetAndZipSource
 from make import errors
+from make.make_project.data_medium.zipsource import LocalTargetAndZipSource, make_zipobj
 
 
 @pytest.fixture
@@ -19,8 +19,9 @@ def zipsource():
         Fo("src/en/to", lambda: False),
         Fo("src/en/tre", lambda: False),
     ]
+
     def namelist():
-        for i in ("src/", "src/en/", "src/en/to","src/en/tre"):
+        for i in ("src/", "src/en/", "src/en/to", "src/en/tre"):
             yield i
 
     zipsource.zip.namelist = namelist
@@ -53,6 +54,7 @@ def test_read_bytes(zipsource):
     res = zipsource.read_bytes(pathlib.PurePosixPath("to"))
     assert res == b"data"
 
+
 def test_ensure_source(zipsource):
     zipsource.root = pathlib.PurePosixPath("src/")
     zipsource.ensure_source()
@@ -61,10 +63,11 @@ def test_ensure_source(zipsource):
     with pytest.raises(errors.Abort):
         zipsource.ensure_source()
 
+
 def test_ensure_target(zipsource):
     zipsource.root = pathlib.PurePosixPath("src/")
     with pytest.raises(errors.Abort):
         zipsource.ensure_target()
-        
+
     zipsource.root = pathlib.PurePosixPath("dst/")
     zipsource.ensure_target()

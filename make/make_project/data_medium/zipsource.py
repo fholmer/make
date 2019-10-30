@@ -3,7 +3,7 @@ import pathlib
 import zipfile
 
 from ...errors import Abort
-from ...make_get.make_get import retrive_from_url, can_retrieve, uri_is_zipfile
+from ...make_get.make_get import can_retrieve, retrive_from_url, uri_is_zipfile
 from ...template import root_exclude
 from .local import Local
 
@@ -33,7 +33,7 @@ class LocalTargetAndZipSource(Local):
         foundfile = path_str in self.zip.namelist()
         if foundfile:
             return foundfile
-        founddir = path_str+"/" in self.zip.namelist()
+        founddir = path_str + "/" in self.zip.namelist()
         return founddir
 
     def read_text(self, source):
@@ -51,7 +51,9 @@ class LocalTargetAndZipSource(Local):
     def acquire(self):
         # TODO: make sure filesystem is mounted
         if can_retrieve(self.zip_source):
-            local_path, sub_path = retrive_from_url(self.zip_source, "", self.zip_sub_path)
+            local_path, sub_path = retrive_from_url(
+                self.zip_source, "", self.zip_sub_path
+            )
         else:
             local_path = self.zip_source
             sub_path = self.zip_sub_path

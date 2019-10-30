@@ -1,14 +1,19 @@
 # -*- coding: utf-8 -*-
 """A setuptools based setup module.
 
+Code style:
+    python -m isort
+    python -m black make
+    python -m black tests
+
 Build wheel:
-    python3 setup.py bdist_wheel
+    python setup.py bdist_wheel
 
 Update requirements:
-    python3 -m pip freeze -r requirements.txt > requirements.txt
+    python -m pip freeze -r requirements.txt > requirements.txt
 
 Upload to pypi:
-    python3 -m twine upload dist/*
+    python -m twine upload dist/*
 
 """
 

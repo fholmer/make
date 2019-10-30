@@ -1,0 +1,6 @@
+pylint
+pytest
+twine
+wheel
+isort
+black

@@ -1,6 +1,6 @@
 from pathlib import Path
-from urllib.request import urlretrieve
 from urllib import parse
+from urllib.request import urlretrieve
 
 from ..errors import Abort
 
@@ -37,11 +37,7 @@ def expand_uri(uri, subpath):
                 subpath = "/".join([subpath] + path_parts[2:])
 
         uri = parse.SplitResult(
-            "https",
-            "github.com",
-            "{}/archive/master.zip".format(uri.path),
-            "",
-            ""
+            "https", "github.com", "{}/archive/master.zip".format(uri.path), "", ""
         )
 
     elif uri.scheme == "gl":
@@ -51,22 +47,23 @@ def expand_uri(uri, subpath):
         path_parts = uri.path.split("/")
         master = "{0[1]}-master".format(path_parts)
         if subpath:
-            qs = parse.urlencode({"path":subpath})
+            qs = parse.urlencode({"path": subpath})
         elif len(path_parts) > 2:
-            qs = parse.urlencode({"path":"/".join(path_parts[2:])})
+            qs = parse.urlencode({"path": "/".join(path_parts[2:])})
             subpath_root = "-".join([master] + path_parts[2:])
             subpath = "/".join([subpath_root] + path_parts[2:])
         else:
-            qs=""
+            qs = ""
             subpath = master
         uri = parse.SplitResult(
             "https",
             "gitlab.com",
             "/{0[0]}/{0[1]}/-/archive/master/{1}.zip".format(path_parts, master),
             qs,
-            ""
+            "",
         )
     return uri, subpath
+
 
 def retrive_from_url(source, target, subpath):
     """
@@ -86,7 +83,9 @@ def retrive_from_url(source, target, subpath):
     if target_path.exists():
         names = "\n".join(["1) Use existing", "2) Overwrite", "3) Cancel"])
         question = "target file: {} already exists".format(target_path.name)
-        reply = input("{}\nOptions:\n{}\nChoose an option ([1], 2, 3): ".format(question, names))
+        reply = input(
+            "{}\nOptions:\n{}\nChoose an option ([1], 2, 3): ".format(question, names)
+        )
 
         if reply == "1" or reply == "":
             return target, subpath
@@ -109,6 +108,7 @@ def abs_from_url(uri, target):
     else:
         target = Path(Path(uri.path).name).absolute()
     return target
+
 
 def setup(subparsers):
     parser = subparsers.add_parser("get", help="Download source and store as target")

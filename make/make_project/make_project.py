@@ -25,15 +25,6 @@ def setup(subparsers):
     parser.set_defaults(func=make_project)
 
 
-def post_hook(args):
-    # To the user the source can be a path in local filesystem or the name
-    # of a zipfile.
-    # But to us the source is always a path, it is never a name of a file.
-    # the source is a path in the local filesystem or a path inside a zipfile.
-    # so we do this translation right here:
-    pass
-
-
 Parsers = {
     "ini_parser": ini_parser.get_vars,
     "json_parser": json_parser.get_vars,
@@ -107,6 +98,12 @@ def get_source_medium(args):
 
         medium_class = _dryrun
 
+    # To the user the source can be a path in local filesystem or the name
+    # of a zipfile.
+    # But to us the source is always a path, it is never a name of a file.
+    # the source is a path in the local filesystem or a path inside a zipfile.
+    # so we do this translation right here:
+
     if is_zip:
         medium = medium_class(args.source, args.zip_sub_path)
     else:
@@ -130,9 +127,12 @@ def create_files(source_medium, target_medium, variables):
     source = source_medium.root
     target = target_medium.root
     for action, root, fn in source_medium.iter_filenames(source):
+        is_tpl_dir = source_medium.is_template_dir(root)
+
         if action == 1:
+
             _root = render(root)
-            if _root and not target_medium.contains_blanks(_root):
+            if is_tpl_dir and _root and not target_medium.contains_blanks(_root):
                 target_path = target_medium.joinpath(target, _root)
                 target_medium.mkdir(target_path)
         elif action == 2:
@@ -140,7 +140,7 @@ def create_files(source_medium, target_medium, variables):
             _fn = render(fn)
             # files in the root folder is ignored and files or folders with blank
             # name is also ignored
-            if _fn and _root and not target_medium.contains_blanks(_root):
+            if is_tpl_dir and _fn and _root and not target_medium.contains_blanks(_root):
                 source_path = source_medium.joinpath(source, root, fn)
                 target_path = target_medium.joinpath(target, _root, _fn)
 

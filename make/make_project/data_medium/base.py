@@ -15,6 +15,14 @@ class DataMediumBase:
         return pathlib.Path(path_str).absolute()
 
     @staticmethod
+    def is_template_dir(path_str):
+        start = path_str.find("{{")
+        if start >= 0:
+            if path_str.find("}}") > start:
+                return True
+        return False
+
+    @staticmethod
     def exists(target):
         raise NotImplementedError
 

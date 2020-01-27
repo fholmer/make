@@ -8,6 +8,7 @@ import pytest
 from make import errors
 from make.make_project import make_project
 from make.make_project.data_medium.local import Local
+from make.make_project.data_medium.dry_run import DryRun
 
 
 def test__render_simple():
@@ -65,17 +66,21 @@ def test_make_project_file_exists(create_files, get_source_medium, get_target_me
 
 
 def test_create_dirs():
-    source_medium = Mock()
-    target_medium = Mock()
+    class MockLocal(DryRun, Local):
+        mkdir = Mock()
+        iter_filenames = Mock()
+
+    source_medium = MockLocal("")
+    target_medium = MockLocal("")
 
     source_medium.root = pathlib.Path("src")
     target_medium.root = pathlib.Path("dst")
 
-    target_medium.joinpath = Local.joinpath
-    target_medium.contains_blanks = Local.contains_blanks
+    #target_medium.joinpath = Local.joinpath
+    #target_medium.contains_blanks = Local.contains_blanks
 
     variables = {"dir": {"name": "en"}}
-    dirs = [[(1, "", None), (1, "{{dir.name}}", None)]]
+    dirs = [[(1, "", None), (1, "{{dir.name}}", None), (1, "non_template_dir", None)]]
     source_medium.iter_filenames.side_effect = dirs
 
     make_project.create_files(source_medium, target_medium, variables)
@@ -84,20 +89,23 @@ def test_create_dirs():
 
 
 def test_create_files():
-    source_medium = Mock()
-    target_medium = Mock()
+    class MockLocal(DryRun, Local):
+        mkdir = Mock()
+        iter_filenames = Mock()
+        read_text = Mock()
+        write_text = Mock()
+
+    source_medium = MockLocal("")
+    target_medium = MockLocal("")
 
     source_medium.root = pathlib.Path("src")
     target_medium.root = pathlib.Path("dst")
 
     source_medium.read_text.return_value = "{{ file.content }}"
 
-    target_medium.joinpath = Local.joinpath
-    target_medium.contains_blanks = Local.contains_blanks
+    variables = {"dir": {"name": "en"}, "file": {"name": "fn", "content": "stuff"}}
 
-    variables = {"file": {"name": "fn", "content": "stuff"}}
-
-    dirs = [[(2, "", ""), (2, "en", ""), (2, "en", "{{file.name}}")]]
+    dirs = [[(2, "", ""), (2, "{{dir.name}}", ""), (2, "{{dir.name}}", "{{file.name}}")]]
 
     source_medium.iter_filenames.side_effect = dirs
 

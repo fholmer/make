@@ -65,19 +65,23 @@ class LocalTargetAndZipSource(Local):
         # make sure filesystem is unmounted if it was not already
         # mounted
 
-    def ensure_source(self):
+    def ensure_source_root(self):
         source = "/".join(self.root.parts)
         if not source.endswith("/"):
             source += "/"
         if not source in self.zip.namelist() and not source == "/":
-            raise Abort("Source %s does not exists" % source)
+            raise Abort("Error: Source %s does not exists" % source)
 
-    def ensure_target(self):
+    def ensure_target_root(self):
         target = "/".join(self.root.parts)
         if not target.endswith("/"):
             target += "/"
         if target in self.zip.namelist():
-            raise Abort("Target %s already exists" % self.root)
+            raise Abort("Error: Target %s already exists" % self.root)
+
+    def ensure_target(self, target):
+        if self.exists(target):
+            raise Abort("Error: Target %s already exists" % target)
 
     def iter_filenames(self, source):
         """

@@ -11,6 +11,7 @@ from .base import DataMediumBase
 class Local(DataMediumBase):
     def __init__(self, root):
         self.root = self.get_absolute_as_Path(root)
+        self.root_is_cwd = (root == ".") or (root == os.getcwd())
 
     @staticmethod
     def exists(path):
@@ -53,13 +54,17 @@ class Local(DataMediumBase):
         # make sure filesystem is unmounted if it was not already
         # mounted
 
-    def ensure_source(self):
+    def ensure_source_root(self):
         if not self.root.is_dir():
-            raise Abort("Source %s does not exists" % self.root)
+            raise Abort("Error: Source %s does not exists" % self.root)
 
-    def ensure_target(self):
-        if self.root.is_dir():
-            raise Abort("Target %s already exists" % self.root)
+    def ensure_target_root(self):
+        if (not self.root_is_cwd) and self.root.is_dir():
+            raise Abort("Error: Target %s already exists" % self.root)
+
+    def ensure_target(self, target):
+        if self.exists(target):
+            raise Abort("Error: Target %s already exists" % target)
 
     @staticmethod
     def iter_filenames(source):

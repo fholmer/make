@@ -62,10 +62,10 @@ def make_project(args):
     target_medium = get_target_medium(args)
 
     target_medium.acquire()
-    target_medium.ensure_target()
+    target_medium.ensure_target_root()
 
     source_medium.acquire()
-    source_medium.ensure_source()
+    source_medium.ensure_source_root()
 
     # run parser
     for parser in Parsers.values():
@@ -128,12 +128,11 @@ def create_files(source_medium, target_medium, variables):
     target = target_medium.root
     for action, root, fn in source_medium.iter_filenames(source):
         is_tpl_dir = source_medium.is_template_dir(root)
-
         if action == 1:
-
             _root = render(root)
             if is_tpl_dir and _root and not target_medium.contains_blanks(_root):
                 target_path = target_medium.joinpath(target, _root)
+                target_medium.ensure_target(target_path)
                 target_medium.mkdir(target_path)
         elif action == 2:
             _root = render(root)
@@ -143,6 +142,7 @@ def create_files(source_medium, target_medium, variables):
             if is_tpl_dir and _fn and _root and not target_medium.contains_blanks(_root):
                 source_path = source_medium.joinpath(source, root, fn)
                 target_path = target_medium.joinpath(target, _root, _fn)
+                target_medium.ensure_target(target_path)
 
                 try:
                     if not source_path.suffix.lower() in binary_suffixes:

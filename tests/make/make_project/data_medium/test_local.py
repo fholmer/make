@@ -101,7 +101,7 @@ def test_read_bytes():
 
 
 @patch("pathlib.Path", return_value=Mock())
-def test_ensure_source(path):
+def test_ensure_source_root(path):
     path.return_value = path
     path.absolute.return_value = path
     path.is_dir.side_effect = [True, False]
@@ -109,24 +109,46 @@ def test_ensure_source(path):
     local = Local("usr")
     path.assert_called_once()
 
-    local.ensure_source()
+    local.ensure_source_root()
     path.is_dir.assert_called_once()
 
     with pytest.raises(errors.Abort):
-        local.ensure_source()
+        local.ensure_source_root()
 
 
 @patch("pathlib.Path", return_value=Mock())
-def test_ensure_target(path):
+def test_ensure_target_root(path):
     path.return_value = path
     path.absolute.return_value = path
-    path.is_dir.side_effect = [False, True]
+    path.is_dir.side_effect = [True]
 
     local = Local("usr")
     path.assert_called_once()
 
-    local.ensure_target()
-    path.is_dir.assert_called_once()
-
     with pytest.raises(errors.Abort):
-        local.ensure_target()
+        local.ensure_target_root()
+
+@patch("pathlib.Path", return_value=Mock())
+def test_ensure_target_root_is_cwd(path):
+    path.return_value = path
+    path.absolute.return_value = path
+    path.is_dir.side_effect = [True]
+
+    local = Local(".")
+    path.assert_called_once()
+
+    local.ensure_target_root()
+
+
+def test_ensure_target_exists():
+    path = Mock()
+    path.exists.side_effect = [True]
+    local = Local("usr")
+    with pytest.raises(errors.Abort):
+        local.ensure_target(path)
+
+def test_ensure_target_not_exists():
+    path = Mock()
+    path.exists.side_effect = [False]
+    local = Local("usr")
+    local.ensure_target(path)

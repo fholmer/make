@@ -55,19 +55,26 @@ def test_read_bytes(zipsource):
     assert res == b"data"
 
 
-def test_ensure_source(zipsource):
+def test_ensure_source_root(zipsource):
     zipsource.root = pathlib.PurePosixPath("src/")
-    zipsource.ensure_source()
+    zipsource.ensure_source_root()
 
     zipsource.root = pathlib.PurePosixPath("dst/")
     with pytest.raises(errors.Abort):
-        zipsource.ensure_source()
+        zipsource.ensure_source_root()
 
 
-def test_ensure_target(zipsource):
+def test_ensure_target_root(zipsource):
     zipsource.root = pathlib.PurePosixPath("src/")
     with pytest.raises(errors.Abort):
-        zipsource.ensure_target()
+        zipsource.ensure_target_root()
 
     zipsource.root = pathlib.PurePosixPath("dst/")
-    zipsource.ensure_target()
+    zipsource.ensure_target_root()
+
+def test_ensure_target_exists(zipsource):
+    with pytest.raises(errors.Abort):
+        zipsource.ensure_target(pathlib.PurePosixPath("src/en/to"))
+
+def test_ensure_target_not_exists(zipsource):
+    zipsource.ensure_target(pathlib.PurePosixPath("src/no"))

@@ -54,10 +54,13 @@ class DataMediumBase:
     def copy(source, target):
         raise NotImplementedError
 
-    def ensure_source(self):
+    def ensure_source_root(self):
         raise NotImplementedError
 
-    def ensure_target(self):
+    def ensure_target_root(self):
+        raise NotImplementedError
+
+    def ensure_target(self, target):
         raise NotImplementedError
 
     @staticmethod

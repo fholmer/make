@@ -15,11 +15,7 @@ def setup(subparsers):
     parser.add_argument("--dry-run", action="store_true", help="test run")
     parser.add_argument("-z", "--zip", action="store_true", help="source is a zip file")
     parser.add_argument(
-        "-p",
-        "--sub-path",
-        type=str,
-        default="",
-        help="a sub path within a source",
+        "-p", "--sub-path", type=str, default="", help="a sub path within a source"
     )
     # entrypoint for this subparser
     parser.set_defaults(func=make_project)
@@ -139,7 +135,12 @@ def create_files(source_medium, target_medium, variables):
             _fn = render(fn)
             # files in the root folder is ignored and files or folders with blank
             # name is also ignored
-            if is_tpl_dir and _fn and _root and not target_medium.contains_blanks(_root):
+            if (
+                is_tpl_dir
+                and _fn
+                and _root
+                and not target_medium.contains_blanks(_root)
+            ):
                 source_path = source_medium.joinpath(source, root, fn)
                 target_path = target_medium.joinpath(target, _root, _fn)
                 target_medium.ensure_target(target_path)

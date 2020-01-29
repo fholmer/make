@@ -72,9 +72,11 @@ def test_ensure_target_root(zipsource):
     zipsource.root = pathlib.PurePosixPath("dst/")
     zipsource.ensure_target_root()
 
+
 def test_ensure_target_exists(zipsource):
     with pytest.raises(errors.Abort):
         zipsource.ensure_target(pathlib.PurePosixPath("src/en/to"))
+
 
 def test_ensure_target_not_exists(zipsource):
     zipsource.ensure_target(pathlib.PurePosixPath("src/no"))

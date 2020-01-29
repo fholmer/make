@@ -128,6 +128,7 @@ def test_ensure_target_root(path):
     with pytest.raises(errors.Abort):
         local.ensure_target_root()
 
+
 @patch("pathlib.Path", return_value=Mock())
 def test_ensure_target_root_is_cwd(path):
     path.return_value = path
@@ -146,6 +147,7 @@ def test_ensure_target_exists():
     local = Local("usr")
     with pytest.raises(errors.Abort):
         local.ensure_target(path)
+
 
 def test_ensure_target_not_exists():
     path = Mock()

@@ -39,7 +39,7 @@ setup(
     keywords="make project template",
     url="https://github.com/fholmer/make",
     author="Frode Holmer",
-    author_email="fholmer+netdef@gmail.com",
+    author_email="fholmer+make@gmail.com",
     license="BSD License",
     project_urls={"Source Code": "https://github.com/fholmer/make"},
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
@@ -52,6 +52,7 @@ setup(
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         "Operating System :: POSIX :: Linux",
         "Operating System :: Microsoft :: Windows",
     ],

@@ -15,11 +15,11 @@ def setup(subparsers):
     parser.add_argument("--dry-run", action="store_true", help="test run")
     parser.add_argument("-z", "--zip", action="store_true", help="source is a zip file")
     parser.add_argument(
-        "-zp",
-        "--zip-sub-path",
+        "-p",
+        "--sub-path",
         type=str,
         default="",
-        help="a sub path within a zip file",
+        help="a sub path within a source",
     )
     # entrypoint for this subparser
     parser.set_defaults(func=make_project)
@@ -102,10 +102,10 @@ def get_source_medium(args):
     # of a zipfile.
     # But to us the source is always a path, it is never a name of a file.
     # the source is a path in the local filesystem or a path inside a zipfile.
-    # so we do this translation right here:
+    # so we do this translation right here.
 
     if is_zip:
-        medium = medium_class(args.source, args.zip_sub_path)
+        medium = medium_class(args.source, args.sub_path)
     else:
         medium = medium_class(args.source)
     return medium

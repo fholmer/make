@@ -19,6 +19,9 @@ def make_zipobj(source, zip_sub_path):
 
     return pathlib.PurePosixPath(path), zipobj
 
+def _z_is_dir(path):
+        """Return True if this archive member is a directory."""
+        return path.filename[-1] == '/'
 
 class LocalTargetAndZipSource(Local):
     os_sep = "/"
@@ -119,7 +122,7 @@ class LocalTargetAndZipSource(Local):
             if skip:
                 continue
 
-            if path.is_dir():
+            if _z_is_dir(path):
                 yield 1, root.strip("/"), None
             else:
                 parent, _sep, fn = root.rpartition("/")

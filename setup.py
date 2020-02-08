@@ -2,9 +2,8 @@
 """A setuptools based setup module.
 
 Code style:
-    python -m isort
-    python -m black make
-    python -m black tests
+    python -m isort -rc make tests
+    python -m black make tests
 
 Build wheel:
     python setup.py bdist_wheel

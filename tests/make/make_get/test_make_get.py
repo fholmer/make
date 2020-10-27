@@ -8,7 +8,7 @@ from make import errors
 from make.make_get import make_get
 
 
-@patch("make.make_get.make_get.urlretrieve", return_value=Mock())
+@patch("make.make_get.make_get.request.urlretrieve", return_value=Mock())
 def test_make_get(urlretrive):
     make_get.make_get(args=argparse.Namespace(source="http://src", target="dst"))
     urlretrive.assert_called_once_with(
@@ -16,13 +16,13 @@ def test_make_get(urlretrive):
     )
 
 
-@patch("make.make_get.make_get.urlretrieve", return_value=Mock())
+@patch("make.make_get.make_get.request.urlretrieve", return_value=Mock())
 def test_retrive_from_url_abort(urlretrive):
     with pytest.raises(errors.Abort):
         make_get.retrive_from_url("", "dst", "")
 
 
-@patch("make.make_get.make_get.urlretrieve", return_value=Mock())
+@patch("make.make_get.make_get.request.urlretrieve", return_value=Mock())
 def test_retrive_from_url(urlretrive):
     make_get.retrive_from_url("http://src", "dst", "")
     urlretrive.assert_called_once_with(
@@ -31,7 +31,7 @@ def test_retrive_from_url(urlretrive):
 
 
 @patch.object(make_get, "abs_from_url")
-@patch("make.make_get.make_get.urlretrieve", return_value=Mock())
+@patch("make.make_get.make_get.request.urlretrieve", return_value=Mock())
 def test_retrive_from_url_github(urlretrive, abs_from_url):
     abs_from_url.return_value = fake_path("/test/test", "test")
     make_get.retrive_from_url("gh:fholmer/make", "", "")
@@ -41,7 +41,7 @@ def test_retrive_from_url_github(urlretrive, abs_from_url):
 
 
 @patch.object(make_get, "abs_from_url")
-@patch("make.make_get.make_get.urlretrieve", return_value=Mock())
+@patch("make.make_get.make_get.request.urlretrieve", return_value=Mock())
 def test_retrive_from_url_gitlab(urlretrive, abs_from_url):
     abs_from_url.return_value = fake_path("/test/test", "test")
     make_get.retrive_from_url("gl:fholmer/make", "", "")
@@ -51,7 +51,7 @@ def test_retrive_from_url_gitlab(urlretrive, abs_from_url):
 
 
 @patch.object(make_get, "abs_from_url")
-@patch("make.make_get.make_get.urlretrieve", return_value=Mock())
+@patch("make.make_get.make_get.request.urlretrieve", return_value=Mock())
 def test_retrive_from_url_gitlab_subdir(urlretrive, abs_from_url):
     abs_from_url.return_value = fake_path("/test/test", "test")
     make_get.retrive_from_url("gl:fholmer/make", "", "tests/make/make_project")

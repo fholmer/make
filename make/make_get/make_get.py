@@ -1,8 +1,11 @@
 from pathlib import Path
-from urllib import parse
-from urllib.request import urlretrieve
+from urllib import parse, request
 
 from ..errors import Abort
+
+opener = request.build_opener()
+opener.addheaders = [('User-agent', 'Mozilla/5.0')]
+request.install_opener(opener)
 
 
 def make_get(args):
@@ -96,7 +99,7 @@ def retrive_from_url(source, target, subpath):
 
     print("Download: ", source)
     print("Into    : ", target)
-    urlretrieve(source, target)
+    request.urlretrieve(source, target)
     return target, subpath
 
 
